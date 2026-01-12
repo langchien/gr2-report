@@ -5,7 +5,13 @@
     \Large{\textbf{TÓM TẮT NỘI DUNG ĐỒ ÁN}}\\
 \end{center}
 \vspace{1cm}
-Sinh viên viết tóm tắt ĐATN của mình trong mục này, với 200 đến 350 từ. Theo trình tự, các nội dung tóm tắt cần có: (i) Giới thiệu vấn đề (tại sao có vấn đề đó, hiện tại được giải quyết chưa, có những hướng tiếp cận nào, các hướng này giải quyết như thế nào, hạn chế là gì), (ii) Hướng tiếp cận sinh viên lựa chọn là gì, vì sao chọn hướng đó, (iii) Tổng quan giải pháp của sinh viên theo hướng tiếp cận đã chọn, và (iv) Đóng góp chính của ĐATN là gì, kết quả đạt được sau cùng là gì. Sinh viên cần viết thành đoạn văn, không được viết ý hoặc gạch đầu dòng.
+Trong bối cảnh công nghệ thông tin phát triển mạnh mẽ, nhu cầu trao đổi thông tin trực tuyến qua tin nhắn và cuộc gọi video ngày càng tăng cao, đòi hỏi các ứng dụng phải đảm bảo tốc độ nhanh, độ trễ thấp và khả năng xử lý đa phương tiện hiệu quả. Các giải pháp hiện có tuy phổ biến nhưng việc tự xây dựng và làm chủ công nghệ truyền tải thời gian thực (real-time) và truyền phát video (streaming) vẫn là một thách thức kỹ thuật quan trọng nhằm tối ưu hóa trải nghiệm người dùng trong các điều kiện mạng khác nhau.
+
+Để giải quyết bài toán này, đồ án lựa chọn phát triển hệ thống theo kiến trúc Client-Server. Hệ thống sử dụng các giao thức truyền tải thời gian thực như WebSocket và WebRTC để xử lý các tác vụ nhắn tin và gọi điện, đảm bảo sự tương tác tức thì giữa người dùng. Điểm nổi bật của đồ án là việc tích hợp công nghệ HLS (HTTP Live Streaming) vào quy trình xử lý nội dung video. Việc sử dụng HLS giúp chia nhỏ nội dung video thành các phân đoạn, giúp tối ưu hóa việc truyền tải và cho phép người dùng xem video mượt mà với độ trễ thấp, thích ứng tốt với băng thông mạng thay đổi.
+
+Giải pháp được hiện thực hóa thông qua một ứng dụng web hoàn chỉnh với đầy đủ các chức năng: đăng ký, đăng nhập, tìm kiếm bạn bè, nhắn tin đa phương tiện và gọi điện video. Việc áp dụng HLS cho thấy hiệu quả rõ rệt trong việc cải thiện việc truyền tải và xem lại các video trong cuộc trò chuyện.
+
+Kết quả đạt được là một hệ thống nhắn tin, gọi điện hoạt động ổn định, đáp ứng tốt các yêu cầu về tính năng thời gian thực và xử lý đa phương tiện. Đồ án đóng góp một mô hình tham khảo hiệu quả cho việc kết hợp giữa các dịch vụ real-time và kỹ thuật streaming hiện đại trong phát triển ứng dụng web.
 \begin{flushright}
 Sinh viên thực hiện\\
 \begin{tabular}{@{}c@{}}
