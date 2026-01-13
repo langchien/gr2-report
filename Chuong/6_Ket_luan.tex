@@ -1,12 +1,41 @@
 \documentclass[../DoAn.tex]{subfiles}
 \begin{document}
-\section{Kết luận}
-Sinh viên so sánh kết quả nghiên cứu hoặc sản phẩm của mình với các nghiên cứu hoặc sản phẩm tương tự.
 
-Sinh viên phân tích trong suốt quá trình thực hiện ĐATN, mình đã làm được gì, chưa làm được gì, các đóng góp nổi bật là gì, và tổng hợp những bài học kinh nghiệm rút ra nếu có.
+\section{Kết luận}
+
+Trong khuôn khổ của đồ án môn học nghiên cứu tốt nghiệp 2, tôi đã tập trung nghiên cứu và xây dựng thành công \textbf{"Hệ thống nhắn tin và gọi điện trực tuyến thời gian thực"} với đầy đủ các tính năng của một mạng xã hội hiện đại. Sản phẩm không chỉ dừng lại ở mức độ demo các tính năng cơ bản mà còn đi sâu giải quyết các bài toán kỹ thuật thách thức về truyền tải đa phương tiện và tối ưu hóa hệ thống.
+
+\textbf{Các kết quả chính đã đạt được bao gồm:}
+\begin{itemize}
+    \item \textbf{Về mặt kiến trúc:} Đã xây dựng thành công \textbf{Kiến trúc Client-Server} với mô hình tách biệt rõ ràng giữa Frontend (Client) và Backend (Server). Việc tổ chức mã nguồn theo hướng Module hóa và sử dụng Docker để đóng gói các dịch vụ giúp việc triển khai, bảo trì và mở rộng hệ thống trở nên dễ dàng và linh hoạt hơn.
+    \item \textbf{Về mặt công nghệ:} Đã làm chủ và ứng dụng thành công các công nghệ tiên tiến:
+        \begin{itemize}
+            \item \textbf{WebRTC:} Cho phép gọi điện video P2P chất lượng cao với độ trễ thấp (< 200ms).
+            \item \textbf{HLS Streaming:} Giải quyết triệt để vấn đề xem video trực tuyến, giúp video tải nhanh và mượt mà ngay cả trong điều kiện mạng kém.
+            \item \textbf{Docker & DevOps:} Tự động hóa quy trình triển khai, đảm bảo tính nhất quán của môi trường sản phẩm.
+        \end{itemize}
+    \item \textbf{Về mặt sản phẩm:} Ứng dụng hoạt động ổn định, giao diện thân thiện, hỗ trợ đa nền tảng (Responsive Design) và đầy đủ các tính năng từ xác thực, kết bạn đến nhắn tin đa phương tiện.
+\end{itemize}
+
+So sánh với các sản phẩm tương tự trên thị trường (như Zalo Web, Messenger Web), đồ án tuy chưa thể sánh bằng về bề dày tính năng và hệ sinh thái, nhưng đã tiệm cận được về mặt trải nghiệm người dùng cốt lõi (tốc độ gửi tin, chất lượng cuộc gọi) và đặc biệt là cơ chế xử lý video streaming tối ưu mà nhiều dự án sinh viên thường bỏ qua.
+
+\section{Hạn chế}
+
+Bên cạnh những kết quả đạt được, đồ án vẫn còn tồn tại một số hạn chế nhất định do giới hạn về thời gian và nguồn lực:
+
+\begin{itemize}
+    \item \textbf{Giới hạn của mô hình WebRTC Mesh:} Hiện tại chức năng gọi nhóm (Group Call) đang sử dụng kiến trúc Mesh (kết nối đa điểm P2P). Kiến trúc này đơn giản nhưng tiêu tốn nhiều băng thông của Client khi số lượng người trong phòng tăng lên (hiệu năng giảm sút rõ rệt nếu > 4 người).
+    \item \textbf{Chưa có ứng dụng di động (Native Mobile App):} Hệ thống mới chỉ hoạt động trên nền tảng Web. Mặc dù giao diện đã Responsive nhưng trải nghiệm trên trình duyệt mobile vẫn chưa thể mượt mà và tận dụng tốt phần cứng như Native App.
+    \item \textbf{Vấn đề bảo mật nâng cao:} Hệ thống đã có HTTPS và JWT, nhưng chưa triển khai mã hóa đầu cuối (End-to-End Encryption - E2EE) cho toàn bộ nội dung tin nhắn, đây là tiêu chuẩn quan trọng của các ứng dụng chat hiện đại.
+\end{itemize}
 
 \section{Hướng phát triển}
-Trong phần này, sinh viên trình bày định hướng công việc trong tương lai để hoàn thiện sản phẩm hoặc nghiên cứu của mình.
 
-Trước tiên, sinh viên trình bày các công việc cần thiết để hoàn thiện các chức năng/nhiệm vụ đã làm. Sau đó sinh viên phân tích các hướng đi mới cho phép cải thiện và nâng cấp các chức năng/nhiệm vụ đã làm.
+Dựa trên nền tảng hiện có, đồ án đề xuất các hướng phát triển tiếp theo để hoàn thiện và nâng cấp hệ thống:
+
+\begin{itemize}
+    \item \textbf{Nâng cấp kiến trúc WebRTC với SFU:} Chuyển đổi từ mô hình Mesh sang sử dụng \textbf{SFU (Selective Forwarding Unit)} bằng cách tích hợp Media Server (như Mediasoup hoặc Kurento). Điều này sẽ giảm tải băng thông cho Client và cho phép tổ chức các cuộc họp trực tuyến quy mô lớn (trăm người).
+    \item \textbf{Phát triển Mobile App với React Native:} Tận dụng mã nguồn ReactJS hiện có và kiến trúc API Backend để xây dựng phiên bản Mobile App (iOS/Android), hỗ trợ Push Notification và tích hợp sâu với danh bạ điện thoại.
+\end{itemize}
+
 \end{document}

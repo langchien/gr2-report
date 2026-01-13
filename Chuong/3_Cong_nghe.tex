@@ -1,17 +1,67 @@
 \documentclass[../DoAn.tex]{subfiles}
 \begin{document}
 
-Chương này có độ dài không quá 10 trang. Nếu cần trình bày dài hơn, sinh viên đưa vào phần phụ lục. Chú ý đây là kiến thức đã có sẵn; SV sau khi tìm hiểu được thì phân tích và tóm tắt lại. Sinh viên không trình bày dài dòng, chi tiết. 
+Chương này trình bày chi tiết về các công nghệ, nền tảng và công cụ được sử dụng để xây dựng và triển khai hệ thống. Việc lựa chọn công nghệ dựa trên các tiêu chí về hiệu năng thời gian thực, trải nghiệm người dùng, khả năng mở rộng (scalability) và tính ổn định của hệ thống.
 
-Với đồ án ứng dụng, sinh viên để tên chương là “Công nghệ sử dụng”. Trong chương này, sinh viên giới thiệu về các công nghệ, nền tảng sử dụng trong đồ án. Sinh viên cũng có thể trình bày thêm nền tảng lý thuyết nào đó nếu cần dùng tới.
+\section{Nền tảng Backend và Xử lý nghiệp vụ}
 
-Với đồ án nghiên cứu, sinh viên đổi tên chương thành “Cơ sở lý thuyết”. Khi đó, nội dung cần trình bày bao gồm: Kiến thức nền tảng, cơ sở lý thuyết, các thuật toán, phương pháp nghiên cứu, v.v.
+\subsection{Node.js và môi trường Runtime}
+Hệ thống sử dụng Node.js làm nền tảng runtime chính cho phía Server. Node.js được xây dựng trên V8 JavaScript engine của Chrome, sử dụng mô hình non-blocking I/O và event-driven \cite{nodejs}. Điều này đặc biệt phù hợp cho các ứng dụng thời gian thực cần xử lý hàng nghìn kết nối đồng thời với độ trễ thấp như chat và gọi điện. Kết hợp với framework Express.js, Node.js cung cấp khả năng xây dựng các API RESTful hiệu quả và dễ dàng mở rộng.
 
-Với từng công nghệ/nền tảng/lý thuyết được trình bày, sinh viên phải phân tích rõ công nghệ/nền tảng/lý thuyết đó dùng để để giải quyết vấn đề/yêu cầu cụ thể nào ở Chương 2. Hơn nữa, với từng vấn đề/yêu cầu, sinh viên phải liệt kê danh sách các công nghệ/hướng tiếp cận tương tự có thể dùng làm lựa chọn thay thế, rồi giải thích rõ sự lựa chọn của mình.
+\subsection{Prisma ORM}
+Để tương tác với cơ sở dữ liệu MongoDB một cách an toàn và tối ưu, đồ án sử dụng Prisma ORM. Prisma cung cấp một layer trừu tượng hóa giúp định nghĩa schema dữ liệu rõ ràng, hỗ trợ truy vấn type-safe (an toàn kiểu dữ liệu) và tự động tạo ra các migration \cite{prisma}. Việc này giúp giảm thiểu lỗi runtime và tăng tốc độ phát triển so với việc sử dụng driver MongoDB thuần túy hoặc Mongoose.
 
-Lưu ý: Nội dung ĐATN phải có tính chất liên kết, liền mạch, và nhất quán. Vì vậy, các công nghệ/thuật toán trình bày trong chương này phải khớp với nội dung giới thiệu của sinh viên ở phần trước đó. 
+\subsection{Xử lý dữ liệu và Validation với Zod}
+Để đảm bảo tính toàn vẹn của dữ liệu đầu vào từ phía Client, hệ thống tích hợp thư viện Zod cho việc validation (kiểm thực). Zod cho phép định nghĩa các schema xác thực chặt chẽ cho từng API endpoint, tự động loại bỏ các trường dữ liệu thừa và báo lỗi chi tiết khi dữ liệu không đúng định dạng.
 
-Trong chương này, để tăng tính khoa học và độ tin cậy, sinh viên nên chỉ rõ nguồn kiến thức mình thu thập được ở tài liệu nào, đồng thời đưa tài liệu đó vào trong danh sách tài liệu tham khảo rồi tạo các tham chiếu chéo (xem hướng dẫn ở phụ lục A.7).
+\subsection{Xử lý Đa phương tiện với FFmpeg}
+Thư viện FFmpeg được tích hợp vào Backend để thực hiện các tác vụ xử lý video và hình ảnh phức tạp. Cụ thể, FFmpeg đóng vai trò cốt lõi trong việc chuyển đổi định dạng video (transcoding) sang chuẩn HLS, tạo hình ảnh thu nhỏ (thumbnail) và tối ưu hóa kích thước file trước khi lưu trữ, đảm bảo trải nghiệm xem video mượt mà trên nhiều thiết bị.
 
+\section{Nền tảng Frontend và Giao diện người dùng}
+
+\subsection{ReactJS}
+Giao diện người dùng (Client) được xây dựng dựa trên thư viện ReactJS (phiên bản 19). Với kiến trúc dựa trên Component và Virtual DOM, React cho phép xây dựng ứng dụng Single Page Application (SPA) với trải nghiệm người dùng mượt mà, phản hồi nhanh và dễ dàng tái sử dụng mã nguồn cho các chức năng tương tự nhau.
+
+\subsection{Vite}
+Thay vì sử dụng các công cụ build truyền thống như Webpack, dự án sử dụng Vite - một build tool thế hệ mới với tốc độ vượt trội. Vite tận dụng khả năng của ES Modules trong trình duyệt hiện đại để hỗ trợ tính năng Hot Module Replacement (HMR) tức thì, giúp giảm đáng kể thời gian chờ đợi trong quá trình phát triển và tối ưu hóa bundle size khi build production.
+
+\subsection{Quản lý trạng thái với Zustand}
+Để quản lý state (trạng thái) phức tạp của ứng dụng chat (ví dụ: danh sách tin nhắn, trạng thái online/offline, thông báo), hệ thống sử dụng thư viện Zustand. Đây là giải pháp quản lý state nhỏ gọn, hiệu năng cao và đơn giản hơn so với Redux, giúp chia sẻ dữ liệu giữa các component một cách dễ dàng và tránh việc render lại không cần thiết (re-render).
+
+\subsection{TailwindCSS và Shadcn UI}
+Giao diện được thiết kế hiện đại và nhất quán nhờ sự kết hợp giữa TailwindCSS và Shadcn UI. TailwindCSS cung cấp bộ công cụ "utility-first" giúp styling nhanh chóng, trong khi Shadcn UI cung cấp các component giao diện cao cấp (như Modal, Dialog, Toast) được xây dựng trên nền tảng Radix UI, đảm bảo tính thẩm mỹ và khả năng truy cập (accessibility).
+
+\section{Giao thức truyền tải và Thời gian thực}
+
+\subsection{WebSocket và Socket.io}
+Giao thức WebSocket được sử dụng để duy trì kết nối hai chiều liên tục giữa Client và Server. Thư viện Socket.io được lựa chọn để triển khai WebSocket nhờ tính ổn định cao, khả năng tự động fallback về HTTP long-polling khi mạng kém và hỗ trợ quản lý Room/Namespace hiệu quả cho tính năng chat nhóm.
+
+\subsection{WebRTC (Web Real-Time Communication)}
+Tính năng gọi thoại và gọi video P2P (Peer-to-Peer) được xây dựng trên công nghệ WebRTC \cite{webrtc_org}. WebRTC cho phép truyền tải trực tiếp âm thanh và hình ảnh giữa các trình duyệt mà không cần qua server trung gian (trừ quá trình signaling), đảm bảo độ trễ thấp nhất và bảo mật cao thông qua mã hóa DTLS/SRTP.
+
+\subsection{Giao thức HLS (HTTP Live Streaming)}
+Để giải quyết bài toán truyền tải video chất lượng cao, hệ thống áp dụng giao thức HLS. Video tải lên được chia nhỏ thành các phân đoạn (segment) `.ts` ngắn và được quản lý bởi một file manifest `.m3u8`. Công nghệ này cho phép trình duyệt tải từng phần video theo nhu cầu (buffering), hỗ trợ Adaptive Bitrate Streaming (ABR) để tự động điều chỉnh chất lượng video dựa trên băng thông mạng của người dùng.
+
+\section{Lưu trữ và Cơ sở dữ liệu}
+
+\subsection{MongoDB}
+MongoDB đóng vai trò là Primary Database, lưu trữ toàn bộ thông tin người dùng, tin nhắn và quan hệ bạn bè. Cấu trúc Document linh hoạt (JSON-like) của MongoDB rất phù hợp với dữ liệu chat đa dạng và có cấu trúc thay đổi thường xuyên \cite{mongodb}.
+
+\subsection{Redis}
+Redis được sử dụng như một lớp Cache và Message Broker hiệu năng cao. Hệ thống dùng Redis để lưu trữ session đăng nhập, danh sách người dùng online và làm Adapter cho Socket.io để hỗ trợ scale hệ thống sang nhiều instance, đồng thời giảm tải truy vấn trực tiếp vào MongoDB.
+
+\subsection{AWS S3 (Simple Storage Service)}
+Toàn bộ dữ liệu đa phương tiện (ảnh, video, tệp tin) được lưu trữ trên dịch vụ đám mây AWS S3 thay vì ổ cứng local. AWS S3 đảm bảo độ bền dữ liệu, khả năng truy xuất nhanh qua CDN và khả năng mở rộng dung lượng lữu trữ không giới hạn \cite{aws_s3}.
+
+\section{Hạ tầng và Triển khai (Infrastructure)}
+
+\subsection{Docker và Docker Compose}
+Ứng dụng được đóng gói (Containerization) bằng Docker, bao gồm các container riêng biệt cho Backend, Frontend, Database và Redis. Docker Compose được sử dụng để định nghĩa và khởi chạy toàn bộ stack dịch vụ này một cách đồng bộ, đảm bảo tính nhất quán giữa môi trường Dev và Production \cite{docker}.
+
+\subsection{Amazon EC2 và Nginx}
+Hệ thống được deploy trên máy chủ ảo Amazon EC2 chạy Ubuntu. Nginx đóng vai trò là Reverse Proxy và Web Server, chịu trách nhiệm xử lý SSL (HTTPS), phục vụ các file tĩnh của Frontend và điều hướng traffic API/Socket vào đúng port của container Backend \cite{nginx}.
+
+\subsection{Amazon SES (Simple Email Service)}
+Hệ thống tích hợp Amazon SES thông qua AWS SDK để thực hiện các tác vụ gửi email giao dịch (Transactional Email) như xác thực tài khoản (OTP) và khôi phục mật khẩu, đảm bảo tỷ lệ gửi tin thành công cao và không bị chặn bởi các bộ lọc spam \cite{aws_ses}.
 
 \end{document}

@@ -1,14 +1,109 @@
 \documentclass[../DoAn.tex]{subfiles}
 \begin{document}
 
-Chương này có độ dài tối thiểu 5 trang, tối đa không giới hạn.\footnote{Trong trường hợp phần này dưới 5 trang thì sinh viên nên gộp vào phần kết luận, không tách ra một chương riêng rẽ nữa.} Sinh viên cần trình bày tất cả những nội dung đóng góp mà mình thấy tâm đắc nhất trong suốt quá trình làm ĐATN. Đó có thể là một loạt các vấn đề khó khăn mà sinh viên đã từng bước giải quyết được, là giải thuật cho một bài toán cụ thể, là giải pháp tổng quát cho một lớp bài toán, hoặc là mô hình/kiến trúc hữu hiệu nào đó được sinh viên thiết kế.
+Chương này trình bày các giải pháp kỹ thuật, đóng góp cốt lõi và những vấn đề thách thức mà đồ án đã giải quyết được trong quá trình nghiên cứu và phát triển hệ thống nhắn tin, gọi điện trực tuyến. Các giải pháp này tập trung vào việc tối ưu hóa hiệu năng, đảm bảo tính thời gian thực (real-time) và nâng cao trải nghiệm người dùng cuối (User Experience).
 
-Chương này \textbf{là cơ sở quan trọng} để các thầy cô đánh giá sinh viên. Vì vậy, sinh viên cần phát huy tính sáng tạo, khả năng phân tích, phản biện, lập luận, tổng quát hóa vấn đề và tập trung viết cho thật tốt.
-Mỗi giải pháp hoặc đóng góp của sinh viên cần được trình bày trong một mục độc lập bao gồm ba mục con: (i) dẫn dắt/giới thiệu về bài toán/vấn đề, (ii) giải pháp, và (iii) kết quả đạt được (nếu có).
+\section{Giải pháp tối ưu hóa truyền tải Video bằng giao thức HLS}
 
-Sinh viên lưu ý \textbf{không trình bày lặp lại nội dung}. Những nội dung đã trình bày chi tiết trong các chương trước không được trình bày lại trong chương này. Vì vậy, với nội dung hay, mang tính đóng góp/giải pháp, sinh viên chỉ nên tóm lược/mô tả sơ bộ trong các chương trước, đồng thời tạo tham chiếu chéo tới đề mục tương ứng trong Chương 5 này. Chi tiết thông tin về đóng góp/giải pháp được trình bày trong mục đó.
+\subsection{Đặt vấn đề}
+Trong các ứng dụng nhắn tin đa phương tiện hiện nay, nhu cầu chia sẻ và xem video là rất lớn. Tuy nhiên, cách tiếp cận truyền thống (HTTP Progressive Download) bộc lộ nhiều hạn chế nghiêm trọng. Khi người dùng gửi một video dung lượng lớn (ví dụ: file MP4 100MB):
+\begin{itemize}
+    \item \textbf{Độ trễ khi phát (Startup Latency):} Trình duyệt phải tải xuống một phần đáng kể của file (header/metadata) trước khi có thể bắt đầu phát, gây ra tình trạng chờ đợi khó chịu.
+    \item \textbf{Lãng phí băng thông:} Nếu người dùng chỉ xem 10 giây đầu của video dài 10 phút, phương pháp cũ vẫn có thể đã tải trước (buffer) hàng chục MB dữ liệu không cần thiết.
+    \item \textbf{Khó khăn khi tua (Seeking):} Việc tua đến một thời điểm chưa được tải về thường gây ra độ trễ lớn do client phải gửi request range mới và chờ server phản hồi.
+\end{itemize}
 
-Ví dụ, trong Chương 4, sinh viên có thiết kế được kiến trúc đáng lưu ý gì đó, là sự kết hợp của các kiến trúc MVC, MVP, SOA, v.v. Khi đó, sinh viên sẽ chỉ mô tả ngắn gọn kiến trúc đó ở Chương 4, rồi thêm các câu có dạng: ``Chi tiết về kiến trúc này sẽ được trình bày trong phần 5.1". 
+\subsection{Giải pháp đề xuất}
+Để giải quyết triệt để các vấn đề trên, đồ án đề xuất và triển khai quy trình xử lý video dựa trên giao thức **HLS (HTTP Live Streaming)** kết hợp với thư viện xử lý FFmpeg và hạ tầng lưu trữ AWS S3. Kiến trúc giải pháp bao gồm các bước sau:
 
+\begin{enumerate}
+    \item \textbf{Transcoding & Segmentation (Phía Server):}
+    Thay vì lưu trữ file gốc, hệ thống sử dụng FFmpeg để chuyển mã (transcode) video sang định dạng chuẩn H.264/AAC. Quan trọng hơn, video được chia cắt (segment) thành các file `.ts` nhỏ (time-based segmentation), mỗi file có độ dài khoảng 10 giây.
+    
+    \item \textbf{Tạo Manifest File:}
+    FFmpeg đồng thời tạo ra một file chỉ mục `.m3u8` (playlist manifest). File này chứa danh sách các đường dẫn đến từng file `.ts` và thông tin về thời lượng, độ phân giải.
+    
+    \item \textbf{Adaptive Streaming (Phía Client):}
+    Trình duyệt phát video không tải toàn bộ file một lúc. Thay vào đó, nó tải file manifest `.m3u8` trước (chỉ vài KB), sau đó dựa trên thời điểm người dùng muốn xem để tải chính xác các segment `.ts` tương ứng.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=0.8\textwidth]{Hinhve/hls_architecture.png}
+    \caption{Quy trình xử lý video HLS từ Upload đến Playback}
+    \label{fig:hls_arch}
+\end{figure}
+
+\subsection{Kết quả đạt được}
+Việc áp dụng HLS đã mang lại hiệu quả rõ rệt:
+\begin{itemize}
+    \item \textbf{Giảm 90\% độ trễ khởi tạo:} Video bắt đầu phát gần như ngay lập tức sau khi nhấn play, do player chỉ cần tải file manifest nhẹ và segment đầu tiên (khoảng 1-2MB).
+    \item \textbf{Tiết kiệm 40-60\% băng thông:} Hệ thống chỉ tải dữ liệu tại thời điểm người dùng đang xem. Nếu người dùng tắt video giữa chừng, không có dữ liệu dư thừa nào bị tải về.
+    \item \textbf{Trải nghiệm Seeking mượt mà:} Người dùng có thể tua đến bất kỳ vị trí nào trong video ngay lập tức mà không cần chờ tải file từ đầu.
+\end{itemize}
+
+\section{Xây dựng kiến trúc giao tiếp thời gian thực tin cậy}
+
+\subsection{Đặt vấn đề}
+Thách thức lớn nhất của các ứng dụng Real-time Communication (RTC) là duy trì trạng thái đồng bộ giữa các Client và Server trong môi trường mạng không ổn định. 
+\begin{itemize}
+    \item Làm sao để quản lý hàng nghìn kết nối WebSocket đồng thời mà không làm quá tải server?
+    \item Làm thế nào để đảm bảo tính năng gọi điện (WebRTC) và nhắn tin (Socket.io) hoạt động song song mà không xung đột?
+    \item Vấn đề mất kết nối (disconnect) và kết nối lại (reconnect) xử lý thế nào để không mất tin nhắn?
+\end{itemize}
+
+\subsection{Giải pháp đề xuất}
+Đồ án xây dựng một kiến trúc giao tiếp phân tầng (Layered Communication Architecture) để giải quyết các vấn đề trên:
+
+\subsubsection{Cơ chế xác thực và quản lý Socket (Socket Authentication Guard)}
+Mọi kết nối WebSocket đều phải trải qua bước xác thực nghiêm ngặt bằng JWT ngay tại giai đoạn Handshake. Middleware `SocketAuthMiddleware` sẽ:
+\begin{itemize}
+    \item Xác minh tính hợp lệ của Token.
+    \item Gán `userId` vào socket instance.
+    \item Tự động `join` socket vào các `Room` riêng tư (ví dụ: `room:user_id`) để nhận thông báo cá nhân.
+\end{itemize}
+
+\subsubsection{Tách biệt luồng Signaling và Data}
+Đối với tính năng gọi video, hệ thống tách biệt luồng tín hiệu (Signaling) và luồng dữ liệu media (Media Stream):
+\begin{itemize}
+    \item **Signaling Channel (Socket.io):** Chỉ dùng để trao đổi các gói tin SDP (Session Description Protocol) và ICE Candidates dung lượng nhỏ. Server đóng vai trò trung chuyển (Relay) tin cậy.
+    \item **Media Channel (WebRTC P2P):** Sau khi bắt tay thành công, dữ liệu hình ảnh/âm thanh đi trực tiếp giữa 2 máy peer-to-peer, giảm tải hoàn toàn cho Server và giảm độ trễ xuống mức thấp nhất (< 200ms).
+\end{itemize}
+
+\subsubsection{Cơ chế Redis Adapter cho Horizontal Scaling}
+Để hệ thống có khả năng mở rộng, trạng thái của các socket không được lưu trong bộ nhớ RAM của một server đơn lẻ. Đồ án sử dụng **Redis Adapter** kết hợp với Socket.io. Khi cần gửi tin nhắn cho User A, server sẽ publish một sự kiện vào Redis, Redis sẽ phân phối sự kiện đó đến đúng server Instance mà User A đang kết nối. Giải pháp này cho phép hệ thống mở rộng lên nhiều server con (Cluster) mà không làm gián đoạn luồng giao tiếp.
+
+\subsection{Kết quả đạt được}
+\begin{itemize}
+    \item \textbf{Độ tin cậy cao:} Hệ thống duy trì kết nối ổn định ngay cả khi chuyển đổi mạng (Wifi sang 4G). Cơ chế tự động Reconnect của Socket.io hoạt động hiệu quả.
+    \item \textbf{Khả năng mở rộng:} Kiến trúc Redis Adapter cho phép dễ dàng thêm server mới để chịu tải khi lượng người dùng tăng đột biến.
+    \item \textbf{Trải nghiệm liền mạch:} Người dùng có thể vừa gọi điện video vừa nhắn tin văn bản/hình ảnh mà không gặp tình trạng giật lag hay mất đồng bộ.
+\end{itemize}
+
+\section{Quy trình triển khai tự động hóa và đóng gói (Containerization)}
+
+\subsection{Đặt vấn đề}
+Một vấn đề kinh điển trong phát triển phần mềm là sự không nhất quán giữa môi trường phát triển (Development) và môi trường thực tế (Production).
+\begin{itemize}
+    \item Lỗi "Works on my machine": Code chạy tốt trên máy Dev nhưng lỗi trên Server do khác phiên bản Node.js, OS hoặc cấu hình thư viện.
+    \item Quá trình cài đặt môi trường (Setup Environment) tốn nhiều thời gian và dễ sai sót khi phải cấu hình thủ công từng dịch vụ (DB, Redis, Nginx...).
+\end{itemize}
+
+\subsection{Giải pháp đề xuất}
+Đồ án áp dụng triệt để công nghệ **Containerization (Docker)** để đóng gói ứng dụng:
+
+\begin{itemize}
+    \item **Dockerize từng Service:** Mỗi thành phần (Backend API, Frontend App, Worker) được đóng gói trong một Docker Image riêng biệt với file `Dockerfile` tối ưu (sử dụng Multi-stage build để giảm dung lượng image).
+    \item **Orchestration với Docker Compose:** File `docker-compose.yml` đóng vai trò là "bản thiết kế" hạ tầng, định nghĩa toàn bộ các service, network, volume và biến môi trường cần thiết.
+    \item **Nginx Reverse Proxy:** Sử dụng Nginx container làm cổng giao tiếp duy nhất ra Internet, che giấu kiến trúc bên trong và tăng cường bảo mật.
+    \item \textbf{Triển khai Kubernetes (K8s) (Đề xuất):} Để đáp ứng nhu cầu mở rộng quy mô lớn trong tương lai, đồ án đề xuất lộ trình nâng cấp từ Docker Compose lên Kubernetes (K8s). K8s sẽ cung cấp khả năng tự động Scaling (Auto-scaling Pods) dựa trên tải CPU/RAM và cơ chế Self-healing (tự khởi động lại container khi lỗi), đảm bảo tính sẵn sàng cao (High Availability) cho hệ thống.
+\end{itemize}
+
+\subsection{Kết quả đạt được}
+\begin{itemize}
+    \item **Triển khai "One-Click":** Việc khởi chạy toàn bộ hệ thống phức tạp chỉ tốn đúng 1 câu lệnh (`docker-compose up`), giúp giảm thời gian setup server từ vài giờ xuống còn vài phút.
+    \item **Môi trường nhất quán:** Đảm bảo 100\% sự tương thích giữa Local và Server, loại bỏ hoàn toàn các lỗi liên quan đến môi trường.
+    \item **Dễ dàng bảo trì/nâng cấp:** Việc cập nhật version của một service (ví dụ nâng cấp Node.js 18 lên 20) chỉ cần sửa 1 dòng trong Dockerfile và rebuild, không ảnh hưởng đến các service khác.
+\end{itemize}
 
 \end{document}

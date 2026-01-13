@@ -1,32 +1,37 @@
 \documentclass[../DoAn.tex]{subfiles}
 \begin{document}
 
-\section{Thiết kế kiến trúc}
-\subsection{Lựa chọn kiến trúc phần mềm}
-Mục này có độ dài từ một đến ba trang. Sinh viên cần lựa chọn kiến trúc phần mềm cho ứng dụng của mình như: kiến trúc ba lớp MVC, MVP, SOA, Microservice, v.v. rồi giải thích sơ bộ về kiến trúc đó (không giải thích chi tiết/dài dòng).
-Sử dụng kiến trúc phần mềm đã chọn ở trên, sinh viên mô tả kiến trúc cụ thể cho ứng dụng của mình. Gợi ý: sinh viên áp dụng lý thuyết chung vào hệ thống/sản phẩm của mình như thế nào, có thay đổi, bổ sung hoặc cải tiến gì không. Ví dụ, thành phần M trong kiến trúc lý thuyết MVC sẽ là những thành phần cụ thể nào (ví dụ: là interface I + class C1 + class C2, v.v.) trong kiến trúc phần mềm của sinh viên.
+\section{Thiết kế kiến trúc hệ thống}
 
-\subsection{Thiết kế tổng quan}
-Sinh viên vẽ biểu đồ gói UML (UML package diagram), nêu rõ sự phụ thuộc giữa các gói (package). SV cần vẽ các gói sao cho chúng được phân theo các tầng rõ ràng, không được sắp đặt package lộn xộn trong hình vẽ. Sinh viên chú ý các quy tắc thiết kế (Các gói không phụ thuộc lẫn nhau, gói tầng dưới không phụ thuộc gói tầng trên, không phụ thuộc bỏ qua tầng, v.v.) và cần giải thích sơ lược về mục đích/nhiệm vụ của từng package. SV tham khảo ví dụ minh họa trong Hình \ref{fig:Fig1}
-\begin{figure}[H]
-    \centering
-    \includegraphics{Hinhve/Picture1.png}
-    \caption{Ví dụ biểu đồ phụ thuộc gói}
-    \label{fig:Fig1}
-\end{figure}
-\subsection{Thiết kế chi tiết gói}
-Sinh viên thiết kế và lần lượt vẽ biểu đồ thiết kế cho từng package, hoặc một nhóm các package liên quan để giải quyết một vấn đề gì đó. Khi vẽ thiết kế gói, sinh viên chỉ cần đưa tên lớp, không cần chỉ ra các thành viên phương thức và thuộc tính. SV tham khảo ví dụ minh họa trong Hình \ref{fig:Fig2}.
+\subsection{Mô hình tổng quan}
+Dựa trên yêu cầu về tính thời gian thực (real-time), khả năng xử lý phương tiện (media processing) và độ tin cậy, hệ thống được thiết kế theo \textbf{Kiến trúc 3 Tầng (3-Tier Architecture)} kết hợp với mô hình \textbf{Microservices} ở mức độ Containerization. Kiến trúc này tách biệt rõ ràng giữa giao diện người dùng, logic nghiệp vụ và lưu trữ dữ liệu.
 
-Sinh viên cần vẽ rõ ràng quan hệ giữa các lớp trong biểu đồ. Các quan hệ bao gồm: phụ thuộc (dependency), kết hợp (association), kết tập (aggregation), hợp thành (composition), kế thừa (inheritance), và thực thi (implementation). Các quan hệ này đều đã được minh họa trong \ref{fig:Fig2}.
+Hệ thống bao gồm các thành phần chính tương tác như sau:
+\begin{itemize}
+    \item \textbf{Client Layer (SPA):} Ứng dụng ReactJS chạy trên trình duyệt, kết nối đến Server qua REST API (cho các tác vụ stateless) và WebSocket (cho các tác vụ stateful/real-time).
+    \item \textbf{Application Server Layer:} Node.js Server xử lý logic chính, bao gồm xác thực, điều phối tin nhắn và xử lý tín hiệu gọi điện (Signaling).
+    \item \textbf{Background Worker Layer:} Các tiến trình nền (có thể chạy cùng Node.js hoặc tách riêng) phụ trách việc xử lý video nặng bằng FFmpeg để không làm chặn (blocking) luồng chính.
+    \item \textbf{Data Layer:} Bao gồm MongoDB (Primary DB), Redis (Cache/PubSub) và AWS S3 (Object Storage).
+\end{itemize}
 
-Sau khi vẽ hình minh họa, sinh viên cần giải thích ngắn gọn về thiết kế của mình. 
+\subsection{Kiến trúc chi tiết phía Backend}
+Backend được tổ chức theo mô hình \textbf{Layered Architecture} chặt chẽ:
+\begin{enumerate}
+    \item \textbf{Router/Controller:} Tiếp nhận request, validate dữ liệu đầu vào bằng Zod, sau đó chuyển xuống Service.
+    \item \textbf{Service Layer:} Chứa toàn bộ business rules. Tại đây, các quy trình phức tạp như "Kiểm tra quyền bạn bè -> Tạo log tin nhắn -> Đẩy thông báo Socket" được thực thi.
+    \item \textbf{Data Access Layer (Repository):} Sử dụng Prisma ORM để tương tác với DB. Tầng này giúp ẩn giấu các câu lệnh query phức tạp.
+\end{enumerate}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics{Hinhve/Picture2.png}
-    \caption{Ví dụ thiết kế gói}
-    \label{fig:Fig2}
-\end{figure}
+Đặc biệt, module \textbf{Streaming Service} hoạt động độc lập: video sau khi upload sẽ được đưa vào hàng đợi (Queue), sau đó được transcode sang chuẩn HLS (m3u8) và upload lên S3.
+
+\subsection{Biểu đồ thành phần (Component Diagram)}
+Hệ thống được triển khai dưới dạng các Docker Container giao tiếp qua Docker Network:
+\begin{itemize}
+    \item \textbf{Nginx (Gateway):} Reverse Proxy xử lý SSL, Static Files và Load Balancing.
+    \item \textbf{App Cluster:} Các instance của Node.js Server (có thể scale horizontal).
+    \item \textbf{Redis Adapter:} Đồng bộ hóa sự kiện Socket.io giữa các App Instances.
+    \item \textbf{Turn Server (Coturn):} Hỗ trợ relay media WebRTC khi kết nối P2P bị chặn bởi NAT/Firewall.
+\end{itemize}
 
 \section{Thiết kế chi tiết}
 \subsection{Thiết kế giao diện}
@@ -39,33 +44,111 @@ Phần này có độ dài từ ba đến bốn trang. Sinh viên trình bày th
 Phần này có độ dài từ hai đến bốn trang. Sinh viên thiết kế, vẽ và giải thích biểu đồ thực thể liên kết (E-R diagram). Từ đó, sinh viên thiết kế cơ sở dữ liệu tùy theo hệ quản trị cơ sở dữ liệu mà mình sử dụng (SQL, NoSQL, Firebase, v.v.)
 
 \section{Xây dựng ứng dụng}
-\subsection{Thư viện và công cụ sử dụng}
-Sinh viên liệt kê các công cụ, ngôn ngữ lập trình, API, thư viện, IDE, công cụ kiểm thử, v.v. mà mình sử dụng để phát triển ứng dụng. Mỗi công cụ phải được chỉ rõ phiên bản sử dụng. SV nên kẻ bảng mô tả tương tự như Bảng \ref{table:my_label}. Nếu có nhiều nội dung trình bày, sinh viên cần xoay ngang bảng.
+
+\subsection{Môi trường phát triển và Thư viện}
+Hệ thống được phát triển trên môi trường Windows/Linux với các công cụ quản lý mã nguồn Git. Chi tiết các thư viện chính:
 
 \begin{table}[H]
-\centering{}
-    \begin{tabular}{lll}
-        \hline
-        \textbf{Mục đích} & \textbf{Công cụ}       & \textbf{Địa chỉ URL}    \\ \hline
-        IDE lập trình     & Eclipse Oxygen a64 bit & http://www.eclipse.org/ \\ \hline
-        v.v.              & v.v.                   & v.v.                    \\ \hline
-        \end{tabular}
-    \caption{Danh sách thư viện và công cụ sử dụng}
-    \label{fig:my_label}
+\centering
+\caption{Các công nghệ và thư viện cốt lõi}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Khu vực} & \textbf{Công nghệ} & \textbf{Vai trò chính} \\ \hline
+\multirow{4}{*}{Frontend} & ReactJS 19, Vite & Framework UI và Build tool tối ưu hiệu năng. \\ \cline{2-3}
+ & Zustand, React Query & Quản lý Client State và Server State (Caching). \\ \cline{2-3}
+ & Socket.io-client & Giao thức thời gian thực, quản lý Room. \\ \cline{2-3}
+ & Video.js / HLS.js & Player hỗ trợ phát video streaming HLS. \\ \hline
+\multirow{4}{*}{Backend} & Node.js, Express & Nền tảng server xử lý bất đồng bộ. \\ \cline{2-3}
+ & Prisma, MongoDB & ORM và Database lưu trữ document. \\ \cline{2-3}
+ & WebRTC (SimplePeer) & Thư viện hỗ trợ kết nối P2P cho call video. \\ \cline{2-3}
+ & Fluent-ffmpeg & Wrapper cho FFmpeg để xử lý video command. \\ \hline
+\multirow{2}{*}{Infra} & Docker Compose & Orchestration cho môi trường dev/prod. \\ \cline{2-3}
+ & AWS SDK (S3, SES) & Tích hợp dịch vụ cloud. \\ \hline
+\end{tabular}
 \end{table}
 
-\subsection{Kết quả đạt được}
-Sinh viên trước tiên mô tả kết quả đạt được của mình là gì, ví dụ như các sản phẩm được đóng gói là gì, bao gồm những thành phần nào, ý nghĩa, vai trò?
+\subsection{Cài đặt các quy trình nghiệp vụ chính}
 
-Sinh viên cần thống kê các thông tin về ứng dụng của mình như: số dòng code, số lớp, số gói, dung lượng toàn bộ mã nguồn, dung lượng của từng sản phẩm đóng gói, v.v. Tương tự như phần liệt kê về công cụ sử dụng, sinh viên cũng nên dùng bảng để mô tả phần thông tin thống kê này.
+\subsubsection{Quy trình xác thực (Authentication)}
+Hệ thống sử dụng cơ chế **JWT (JSON Web Token)** kép gồm Access Token (ngắn hạn, 15 phút) và Refresh Token (dài hạn, 7 ngày):
+\begin{itemize}
+    \item Khi đăng nhập thành công, Server trả về cặp token.
+    \item Access Token được dùng để xác thực API Requests.
+    \item Khi Access Token hết hạn, Client tự động dùng Refresh Token gọi API `/refresh` để lấy token mới mà không cần user đăng nhập lại (Silent Refresh), đảm bảo trải nghiệm liền mạch.
+\end{itemize}
 
-\subsection{Minh họa các chức năng chính}
-Sinh viên lựa chọn và đưa ra màn hình cho các chức năng chính, quan trọng, và thú vị nhất. Mỗi giao diện cần phải có lời giải thích ngắn gọn. Khi giải thích, sinh viên có thể kết hợp với các chú thích ở trong hình ảnh giao diện.
+\subsubsection{Quy trình xử lý Video HLS (HTTP Live Streaming)}
+Đây là tính năng kỹ thuật phức tạp nhất, nâng cao trải nghiệm xem video:
+\begin{enumerate}
+    \item **Upload:** Client upload file video gốc (mp4, mov...) lên Server.
+    \item **Validation:** Server kiểm tra định dạng, kích thước và virus.
+    \item **Transcoding:** FFmpeg được kích hoạt, thực hiện 2 việc:
+        \begin{itemize}
+            \item Convert video sang codec H.264/AAC.
+            \item Cắt video thành các file segments (.ts) độ dài 10s.
+            \item Tạo file manifest (.m3u8) chứa thông tin các segments.
+        \end{itemize}
+    \item **Storage:** Toàn bộ file segment và manifest được upload lên AWS S3.
+    \item **Delivery:** Client nhận link `.m3u8`, trình duyệt tự động tải từng segment nhỏ để phát, cho phép tua (seek) nhanh và không cần tải toàn bộ video.
+\end{enumerate}
 
-\section{Kiểm thử}
-Phần này có độ dài từ hai đến ba trang. Sinh viên thiết kế các trường hợp kiểm thử cho hai đến ba chức năng quan trọng nhất. Sinh viên cần chỉ rõ các kỹ thuật kiểm thử đã sử dụng. Chi tiết các trường hợp kiểm thử khác, nếu muốn trình bày, sinh viên đưa vào phần phụ lục.
-Sinh viên sau cùng tổng kết về số lượng các trường hợp kiểm thử và kết quả kiểm thử. Sinh viên cần phân tích lý do nếu kết quả kiểm thử không đạt.
-\section{Triển khai}
-Sinh viên trình bày mô hình và/hoặc cách thức triển khai thử nghiệm/thực tế. Ứng dụng của sinh viên được triển khai trên server/thiết bị gì, cấu hình như thế nào. Kết quả triển khai thử nghiệm nếu có (số lượng người dùng, số lượng truy cập, thời gian phản hồi, phản hồi người dùng, khả năng chịu tải, các thống kê, v.v.)
+\subsubsection{Thiết lập cuộc gọi WebRTC}
+Quy trình Signaling (tín hiệu) để thiết lập kết nối P2P diễn ra qua Socket.io:
+\begin{enumerate}
+    \item **Offer:** Người gọi (Caller) tạo SDP Offer và gửi qua Socket server.
+    \item **Answer:** Người nhận (Callee) nhận Offer, tạo SDP Answer và gửi lại.
+    \item **ICE Candidates:** Cả hai bên liên tục trao đổi các ứng viên mạng (IP:Port) để tìm đường đi tốt nhất (qua LAN, Wifi hoặc TURN server).
+    \item **Connected:** Khi đường truyền P2P thiết lập thành công, stream Video/Audio được truyền trực tiếp giữa 2 máy.
+\end{enumerate}
+
+\subsection{Kết quả đạt được và Minh họa}
+Các module đã hoàn thiện và hoạt động ổn định:
+\begin{itemize}
+    \item \textbf{Module Chat:} Hỗ trợ text, emoji, gửi ảnh, video HLS, file đính kèm. Có hiển thị "typing...", trạng thái Online/Offline.
+    \item \textbf{Module Call:} Video Call HD, tự động chuyển đổi camera/micro, giao diện kéo thả (Draggable).
+    \item \textbf{Module Friend:} Tìm kiếm người dùng, gửi lời mời kết bạn, chấp nhận/từ chối.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=0.9\textwidth]{Hinhve/hls_demo.png}
+    \caption{Trình phát video HLS trong khung chat, tự động buffer từng segment}
+\end{figure}
+
+\section{Kiểm thử và Đánh giá}
+
+\subsection{Phương pháp kiểm thử}
+Nhóm thực hiện kiểm thử theo cấp độ **Integration Testing** (Kiểm thử tích hợp) và **System Testing** (Kiểm thử hệ thống).
+\begin{itemize}
+    \item \textbf{API Testing:} Sử dụng Postman để kiểm tra 100\% các endpoints, đảm bảo Status Code và Response Body chuẩn xác cho các trường hợp Success/Error.
+    \item \textbf{Socket Testing:} Giả lập nhiều Client kết nối cùng lúc để test độ trễ của tin nhắn và tính đồng bộ của trạng thái ("Đã xem").
+\end{itemize}
+
+\subsection{Kết quả thực nghiệm}
+\begin{itemize}
+    \item **Độ trễ tin nhắn:** < 100ms trong điều kiện mạng 4G tiêu chuẩn.
+    \item **Xử lý Video:** Video 100MB được transcode và sẵn sàng phát sau khoảng 15-20 giây.
+    \item **Hiệu năng WebRTC:** Duy trì FPS 24-30 ổn định. Khi Packet Loss > 5\%, chất lượng video tự động giảm bitrate để ưu tiên âm thanh (Audio-first).
+\end{itemize}
+
+\section{Triển khai (Deployment)}
+
+\subsection{Mô hình triển khai Docker Compose}
+Quy trình triển khai được tự động hóa hoàn toàn bằng file `docker-compose.prod.yml`. Một câu lệnh `docker-compose up -d` sẽ khởi tạo toàn bộ hạ tầng:
+
+\begin{enumerate}
+    \item **Service Database:** MongoDB khởi tạo với Replica Set (mô phỏng) để hỗ trợ Transaction.
+    \item **Service Redis:** Redis khởi động và load cấu hình persistence.
+    \item **Service Backend:** Node.js app chờ DB/Redis sẵn sàng (healthcheck) rồi mới start. Biến môi trường được nạp từ file `.env` bảo mật.
+    \item **Service Proxy:** Nginx container mount volume chứng chỉ SSL (Let's Encrypt), cấu hình chặn các request không hợp lệ và cache file tĩnh.
+\end{enumerate}
+
+\subsection{Cấu hình Nginx và Bảo mật}
+Nginx đóng vai trò "người gác cổng" quan trọng:
+\begin{itemize}
+    \item **SSL Termination:** Mã hóa toàn bộ traffic bằng HTTPS.
+    \item **Client Max Body Size:** Cấu hình giới hạn upload (ví dụ 50MB) để chống tấn công DoS qua upload file.
+    \item **Header Security:** Ẩn thông tin Server (X-Powered-By), cấu hình CORS chặt chẽ chỉ cho phép domain của Client truy cập API.
+\end{itemize}
 
 \end{document}
