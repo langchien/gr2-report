@@ -1,24 +1,74 @@
 \documentclass[../DoAn.tex]{subfiles}
 \begin{document}
-Chương này có độ dài từ 9 đến 11 trang.
-
-Với phương pháp phân tích thiết kế hướng đối tượng, sinh viên sử dụng biểu đồ use case theo hướng dẫn của template này. Với các phương pháp khác, sinh viên trao đổi với giáo viên hướng dẫn để đổi tên và sắp xếp lại đề mục cho phù hợp. Ví dụ, thay vì sử dụng biểu đồ use case, sinh viên đi theo hướng tiếp cận Agile có thể dùng User Story.
-
-
-\textbf{Lưu ý}: Mỗi chương nên có thêm 1 đoạn mở đầu chương và kết thúc chương, mở đầu giới thiệu những nội dung sẽ trình bày trong chương, kết thúc tổng kết lại các nội dung đã trình bày
+Chương này sẽ tập trung vào việc khảo sát các hệ thống tương tự, phân tích các yêu cầu chức năng và phi chức năng của hệ thống Chat App. Từ việc khảo sát, đồ án sẽ đi sâu vào thiết kế tổng quan các chức năng thông qua biểu đồ Use Case, đồng thời đặc tả chi tiết các quy trình nghiệp vụ chính để làm cơ sở cho việc thiết kế và cài đặt ở các chương sau.
 
 \section{Khảo sát hiện trạng}
 \label{section:2.1}
-Thông thường, khảo sát chi tiết về hiện trạng và yêu cầu của phần mềm sẽ được lấy từ ba nguồn chính, đó là (i) người dùng/khách hàng, (ii) các hệ thống đã có, (iii) và các ứng dụng tương tự.
-Sinh viên cần tiến hành phân tích, so sánh, đánh giá chi tiết ưu nhược điểm của các sản phẩm/nghiên cứu hiện có. Sinh viên có thể lập bảng so sánh nếu cần thiết. Kết hợp với khảo sát người dùng/khách hàng (nếu có), sinh viên nêu và mô tả sơ lược các tính năng phần mềm quan trọng cần phát triển.
+Hiện nay, nhu cầu trao đổi thông tin trực tuyến đóng vai trò thiết yếu trong đời sống và công việc. Các ứng dụng nhắn tin tức thời (Instant Messaging) không chỉ đơn thuần là gửi văn bản mà còn tích hợp đa phương tiện, gọi thoại/video chất lượng cao và khả năng làm việc nhóm.
+
+Qua khảo sát các ứng dụng phổ biến trên thị trường như Facebook Messenger, Zalo, và Telegram, nhóm nhận thấy các ứng dụng này đều có điểm chung là tập trung vào trải nghiệm người dùng mượt mà, tốc độ phản hồi nhanh (real-time) và khả năng xử lý dữ liệu đa phương tiện tốt. Tuy nhiên, việc xây dựng một hệ thống tương tự đòi hỏi sự kết hợp phức tạp của nhiều công nghệ hiện đại.
+
+Dựa trên khảo sát và mục tiêu nghiên cứu, đồ án tập trung xây dựng một ứng dụng Chat trên nền web với các nhóm tính năng quan trọng sau:
+\begin{itemize}
+    \item \textbf{Xác thực \& Người dùng}: Đảm bảo bảo mật tài khoản, hỗ trợ đăng nhập đa nền tảng (OAuth2 Google), quản lý thông tin cá nhân và trạng thái hoạt động (Online/Offline).
+    \item \textbf{Mạng xã hội (Social)}: Xây dựng mạng lưới kết nối thông qua tìm kiếm, kết bạn, quản lý danh sách bạn bè và tạo nhóm chat.
+    \item \textbf{Nhắn tin (Messaging)}: Hỗ trợ trao đổi tin nhắn văn bản, biểu cảm (Emoji), và đặc biệt là chia sẻ tài liệu, hình ảnh, video (hỗ trợ Streaming HLS cho video dung lượng lớn).
+    \item \textbf{Gọi điện (Calling)}: Tích hợp tính năng gọi Video Call trực tiếp giữa người dùng thông qua công nghệ WebRTC.
+    \item \textbf{Hệ thống}: Các tính năng nền tảng như thông báo thời gian thực (Notification) và tìm kiếm toàn cục.
+\end{itemize}
 
 \section{Tổng quan chức năng}
 \label{section:2.2}
-Phần \ref{section:2.2} này có nhiệm vụ tóm tắt các chức năng của phần mềm. Trong phần này, sinh viên lưu ý chỉ mô tả chức năng mức cao (tổng quan) mà không đặc tả chi tiết cho từng chức năng. Đặc tả chi tiết được trình bày trong phần \ref{section:2.3}.
+Phần này tóm tắt các nhóm chức năng chính mà hệ thống hướng tới, đáp ứng nhu cầu giao tiếp toàn diện của người dùng. Hệ thống không chỉ cung cấp các tính năng nhắn tin cơ bản mà còn tích hợp các tiện ích nâng cao như gọi video chất lượng cao, chia sẻ tệp tin dung lượng lớn và quản lý nhóm hiệu quả. Các chức năng được chia thành các phân hệ rõ ràng để thuận tiện cho việc thiết kế và phát triển.
 
 \subsection{Biểu đồ use case tổng quát}
 \label{subsection:2.2.1}
-Sinh viên vẽ biểu đồ use case tổng quan và giải thích các tác nhân tham gia là gì, nêu vai trò của từng tác nhân, và mô tả ngắn gọn các use case chính.
+Hệ thống được thiết kế xoay quanh tác nhân chính là \textbf{Người dùng (User)}. Dưới đây là biểu đồ Use Case tổng quát mô tả các chức năng chính của hệ thống:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Hinhve/Biểu đồ use case tổng quát.png}
+    \caption{Biểu đồ Use Case tổng quát của hệ thống}
+    \label{fig:usecase_tongquat}
+\end{figure}
+
+\textbf{Danh sách các tác nhân:}
+\begin{itemize}
+    \item \textbf{Người dùng (User)}: Là người đã đăng ký tài khoản thành công và đăng nhập vào hệ thống. Người dùng có toàn quyền sử dụng các chức năng giao tiếp và quản lý cá nhân.
+\end{itemize}
+
+\textbf{Mô tả các nhóm Use Case chính:}
+\begin{enumerate}
+    \item \textbf{Nhóm Xác thực (Authentication)}:
+    \begin{itemize}
+        \item Đăng ký, Đăng nhập (tài khoản thường và Google OAuth2).
+        \item Quên mật khẩu, Đổi mật khẩu.
+        \item Cập nhật Profile (Avatar, thông tin cá nhân) và quản lý trạng thái Online/Offline.
+    \end{itemize}
+    
+    \item \textbf{Nhóm Bạn bè \& Tìm kiếm (Social)}:
+    \begin{itemize}
+        \item Tìm kiếm người dùng khác trong hệ thống.
+        \item Gửi lời mời kết bạn, Chấp nhận hoặc Từ chối lời mời.
+        \item Xem danh sách bạn bè và Hủy kết bạn.
+    \end{itemize}
+    
+    \item \textbf{Nhóm Nhóm \& Trò chuyện (Group \& Chat)}:
+    \begin{itemize}
+        \item Tạo cuộc hội thoại mới hoặc mở cuộc hội thoại đã có.
+        \item Tạo nhóm chat mới, xem danh sách nhóm.
+        \item Quản lý thành viên nhóm (Thêm, Xóa thành viên).
+        \item Xóa cuộc hội thoại lịch sử.
+    \end{itemize}
+    
+    \item \textbf{Nhóm Nhắn tin \& Gọi điện (Messaging \& Calling)}:
+    \begin{itemize}
+        \item Gửi nhận tin nhắn văn bản (Text), biểu tượng cảm xúc (Emoji).
+        \item Gửi nhận tệp tin đa phương tiện: Ảnh, Video, Audio.
+        \item Xem video chất lượng cao thông qua luồng phát trực tuyến (HLS Streaming).
+        \item Thực hiện cuộc gọi Video trực tuyến (Video Call) sử dụng WebRTC.
+    \end{itemize}
+\end{enumerate}
 
 \subsection{Biểu đồ use case phân rã XYZ}
 \label{subsection:2.2.2}
@@ -41,7 +91,44 @@ Sinh viên lựa chọn từ 4 đến 7 use case quan trọng nhất của đồ
 
 \section{Yêu cầu phi chức năng}
 \label{section:2.4}
-Trong phần này, sinh viên đưa ra các yêu cầu khác nếu có, bao gồm các yêu cầu phi chức năng như hiệu năng, độ tin cậy, tính dễ dùng, tính dễ bảo trì, hoặc các yêu cầu về mặt kỹ thuật như về CSDL, công nghệ sử dụng, v.v.
+Các yêu cầu phi chức năng đóng vai trò quan trọng trong việc đảm bảo chất lượng và trải nghiệm người dùng của hệ thống. Dưới đây là các yêu cầu chi tiết:
+
+\begin{itemize}
+    \item \textbf{Hiệu năng (Performance)}:
+    \begin{itemize}
+        \item Hệ thống phải đảm bảo tính thời gian thực (Real-time). Độ trễ khi gửi/nhận tin nhắn không được vượt quá 200ms trong điều kiện mạng ổn định.
+        \item Video streaming phải mượt mà, hỗ trợ tự động điều chỉnh chất lượng (Adaptive Bitrate Streaming) tùy theo băng thông mạng của người dùng.
+        \item Thời gian tải trang ban đầu không quá 3 giây.
+    \end{itemize}
+    
+    \item \textbf{Bảo mật (Security)}:
+    \begin{itemize}
+        \item Tài khoản người dùng phải được bảo vệ, mật khẩu lưu trữ trong cơ sở dữ liệu phải được mã hóa (hashing).
+        \item Giao tiếp giữa Client và Server phải được mã hóa thông qua giao thức HTTPS và WSS (Secure WebSocket).
+        \item Cơ chế xác thực qua Token (JWT) phải đảm bảo tính toàn vẹn và hết hạn hợp lý.
+        \item Dữ liệu riêng tư của người dùng không được rò rỉ hoặc truy cập trái phép.
+    \end{itemize}
+    
+    \item \textbf{Tính khả dụng và Trải nghiệm người dùng (Usability)}:
+    \begin{itemize}
+        \item Giao diện phải thân thiện, dễ sử dụng, hỗ trợ Responsive để hiển thị tốt trên cả máy tính và thiết bị di động.
+        \item Hệ thống phải có cơ chế phản hồi rõ ràng cho các hành động của người dùng (ví dụ: thông báo loading, thông báo lỗi, thông báo thành công).
+    \end{itemize}
+    
+    \item \textbf{Độ tin cậy (Reliability)}:
+    \begin{itemize}
+        \item Hệ thống hoạt động ổn định 24/7.
+        \item Dữ liệu tin nhắn và tệp tin không được thất lạc trong quá trình truyền tải.
+        \item Hệ thống có khả năng phục hồi sau khi gặp sự cố gián đoạn kết nối mạng.
+    \end{itemize}
+    
+    \item \textbf{Khả năng bảo trì và mở rộng (Maintainability \& Scalability)}:
+    \begin{itemize}
+        \item Mã nguồn phải được tổ chức rõ ràng theo kiến trúc định sẵn (ví dụ: Client-Server, MVC) để dễ dàng nâng cấp và sửa lỗi.
+        \item Hệ thống có khả năng mở rộng để hỗ trợ thêm tính năng mới mà không làm ảnh hưởng đến các chức năng hiện có.
+        \item Sử dụng các công nghệ containerization (Docker) để dễ dàng triển khai trên các môi trường khác nhau.
+    \end{itemize}
+\end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

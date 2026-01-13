@@ -53,3 +53,6 @@ Tài liệu này tổng hợp các quy tắc bắt buộc khi viết nội dung 
 ## 4. QUY TẮC LATEX
 - Sử dụng đúng các lệnh của template: `\cite{...}`, `\ref{...}`, `\label{...}`.
 - Không tự ý thay đổi các gói (packages) hoặc định dạng (margin, font) đã quy định trong file `DoAn.tex` trừ khi thực sự cần thiết.
+
+## 5. QUY TẮC VẼ CÁC BIỂU ĐỒ
+- Đảm bảo cho đúng các  ký hiệu của ngôn ngữ uml 2.5 viết dưới dạng ngôn ngữ để đưa vào công cụ planUML

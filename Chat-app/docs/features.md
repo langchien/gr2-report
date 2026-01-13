@@ -37,6 +37,6 @@
 
 ## 4. Advance / System (Nâng cao)
 
-- [ ] Thông báo (Notification)
-- [ ] Tìm kiếm (Bạn bè, Tin nhắn)
-- [ ] WebRTC (Video Call)
+- [x] Thông báo (Notification)
+- [x] Tìm kiếm (Bạn bè, Tin nhắn)
+- [x] WebRTC (Video Call)
