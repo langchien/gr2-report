@@ -17,7 +17,7 @@ Trong các ứng dụng nhắn tin đa phương tiện hiện nay, nhu cầu chi
 Để giải quyết triệt để các vấn đề trên, đồ án đề xuất và triển khai quy trình xử lý video dựa trên giao thức **HLS (HTTP Live Streaming)** kết hợp với thư viện xử lý FFmpeg và hạ tầng lưu trữ AWS S3. Kiến trúc giải pháp bao gồm các bước sau:
 
 \begin{enumerate}
-    \item \textbf{Transcoding & Segmentation (Phía Server):}
+    \item \textbf{Transcoding \& Segmentation (Phía Server):}
     Thay vì lưu trữ file gốc, hệ thống sử dụng FFmpeg để chuyển mã (transcode) video sang định dạng chuẩn H.264/AAC. Quan trọng hơn, video được chia cắt (segment) thành các file `.ts` nhỏ (time-based segmentation), mỗi file có độ dài khoảng 10 giây.
     
     \item \textbf{Tạo Manifest File:}
@@ -60,7 +60,7 @@ Mọi kết nối WebSocket đều phải trải qua bước xác thực nghiêm
 \begin{itemize}
     \item Xác minh tính hợp lệ của Token.
     \item Gán `userId` vào socket instance.
-    \item Tự động `join` socket vào các `Room` riêng tư (ví dụ: `room:user_id`) để nhận thông báo cá nhân.
+    \item Tự động \texttt{join} socket vào các \texttt{Room} riêng tư (ví dụ: \texttt{room:user\_id}) để nhận thông báo cá nhân.
 \end{itemize}
 
 \subsubsection{Tách biệt luồng Signaling và Data}
