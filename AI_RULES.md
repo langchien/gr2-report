@@ -3,6 +3,8 @@
 Tài liệu này tổng hợp các quy tắc bắt buộc khi viết nội dung cho Đồ án Tốt nghiệp dựa trên Template quy định của Trường Đại học Bách khoa Hà Nội.
 **YÊU CẦU:** AI phải đọc và tuân thủ tuyệt đối các quy tắc này khi soạn thảo hoặc chỉnh sửa nội dung trong dự án.
 
+## 0. Đọc source code ở phần Chat-app/server/src và Chat-app/client/src
+
 ## 1. VĂN PHONG VÀ HÌNH THỨC (QUAN TRỌNG NHẤT)
 - **Văn phong khoa học:** Tuyệt đối **KHÔNG** dùng văn nói, từ ngữ cảm thán, phóng đại, thiếu khách quan (ví dụ: *tuyệt vời, cực kỳ, rất hay, vô cùng hữu ích*...). Câu văn phải ngắn gọn, súc tích, mang tính học thuật.
 - **Cấu trúc đoạn văn:**

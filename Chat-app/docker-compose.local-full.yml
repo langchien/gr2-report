@@ -1,0 +1,77 @@
+services:
+  mongo1:
+    image: mongo:7.0
+    container_name: mongo1
+    # BẮT BUỘC: --port phải khớp với port bên ngoài
+    command:
+      ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "${MONGODB_PRIMARY_PORT:-27021}"]
+    ports:
+      # Sửa lại thành PORT:PORT (Ví dụ 27021:27021)
+      - "${MONGODB_PRIMARY_PORT:-27021}:${MONGODB_PRIMARY_PORT:-27021}"
+    volumes:
+      - mongo1_data:/data/db
+    networks:
+      - app-network
+    # Healthcheck để tự động initiate replica set
+    healthcheck:
+      test: |
+        test $$(echo "try { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo1:${MONGODB_PRIMARY_PORT:-27021}'}]}) } catch(e) { rs.status().ok }" | mongosh --port ${MONGODB_PRIMARY_PORT:-27021} --quiet) -eq 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: my-redis-local
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+    container_name: chat-server
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      # Trỏ vào các container mongo trong mạng nội bộ - Chỉ cần 1 node
+      - DATABASE_URL=mongodb://mongo1:${MONGODB_PRIMARY_PORT:-27021}/chat-app?replicaSet=rs0
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      # Vẫn load env để lấy các secret key khác
+      - ./server/.env
+    depends_on:
+      - mongo1
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      # Nếu client sử dụng biến môi trường khi build, hãy uncomment dòng dưới
+      # args:
+      #   VITE_API_BASE_URL: ${SERVER_URI:-http://localhost:8000}
+    container_name: chat-client
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    depends_on:
+      - server
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo1_data:

@@ -1,0 +1,39 @@
+services:
+  mongo1:
+    image: mongo:7.0
+    container_name: mongo1
+    # BẮT BUỘC: --port phải khớp với port bên ngoài
+    command:
+      ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "${MONGODB_PRIMARY_PORT:-27021}"]
+    ports:
+      # Sửa lại thành PORT:PORT (Ví dụ 27021:27021)
+      - "${MONGODB_PRIMARY_PORT:-27021}:${MONGODB_PRIMARY_PORT:-27021}"
+    volumes:
+      - mongo1_data:/data/db
+    networks:
+      - mongo-cluster
+    # Healthcheck để tự động initiate replica set
+    healthcheck:
+      test: |
+        test $$(echo "try { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo1:${MONGODB_PRIMARY_PORT:-27021}'}]}) } catch(e) { rs.status().ok }" | mongosh --port ${MONGODB_PRIMARY_PORT:-27021} --quiet) -eq 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: my-redis-compose
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - mongo-cluster
+    restart: unless-stopped
+
+networks:
+  mongo-cluster:
+    driver: bridge
+
+volumes:
+  mongo1_data:
