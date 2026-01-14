@@ -1,0 +1,55 @@
+@startuml process_video_call
+|Người gọi (Caller)|
+start
+:Nhấn nút "Video Call";
+
+|Hệ thống (Signaling Server)|
+:Kiểm tra trạng thái Người nhận;
+if (Người nhận Online?) then (Có)
+    :Chuyển tiếp yêu cầu gọi;
+else (Không)
+    :Thông báo "Người dùng không trực tuyến";
+    stop
+endif
+
+|Người nhận (Callee)|
+:Nhận thông báo cuộc gọi đến;
+:Đổ chuông;
+if (Trả lời?) then (Có)
+    :Nhấn "Nghe máy";
+    
+    |Người gọi (Caller)|
+    :Khởi tạo WebRTC PeerConnection;
+    :Tạo Offer (SDP);
+    :Gửi Offer đến Server;
+    
+    |Hệ thống (Signaling Server)|
+    :Chuyển tiếp Offer đến B;
+    
+    |Người nhận (Callee)|
+    :Nhận Offer;
+    :Tạo Answer (SDP);
+    :Gửi Answer đến Server;
+    
+    |Hệ thống (Signaling Server)|
+    :Chuyển tiếp Answer đến A;
+    
+    |Người gọi (Caller)|
+    :Nhận Answer;
+    :Thiết lập kết nối P2P;
+    
+    |Hai bên (P2P)|
+    :Trao đổi ICE Candidates;
+    :Bắt đầu truyền Media (Video/Audio);
+    
+else (Từ chối / Hết thời gian)
+    |Người nhận (Callee)|
+    :Nhấn "Từ chối" hoặc Không trả lời;
+    |Hệ thống (Signaling Server)|
+    :Gửi tín hiệu kết thúc;
+    |Người gọi (Caller)|
+    :Nhận tín hiệu "Máy bận/Không trả lời";
+endif
+
+stop
+@enduml

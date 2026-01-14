@@ -1,0 +1,25 @@
+@startuml authentication
+left to right direction
+actor "Người dùng" as User
+
+package "Hệ thống Xác thực & Người dùng" {
+    usecase "Đăng ký" as UC_Register
+    usecase "Đăng nhập" as UC_Login
+    usecase "Đăng xuất" as UC_Logout
+    usecase "Quên mật khẩu" as UC_ForgotPassword
+    usecase "Đăng nhập Google (OAuth2)" as UC_OAuth
+    usecase "Cập nhật thông tin cá nhân" as UC_UpdateProfile
+    usecase "Đổi mật khẩu" as UC_ChangePassword
+    usecase "Quản lý trạng thái Online/Offline" as UC_Status
+}
+
+User --> UC_Register
+User --> UC_Login
+User --> UC_OAuth
+User --> UC_Logout
+User --> UC_ForgotPassword
+User --> UC_UpdateProfile
+User --> UC_ChangePassword
+User --> UC_Status
+
+@enduml

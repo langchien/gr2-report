@@ -27,7 +27,7 @@ Hệ thống được thiết kế xoay quanh tác nhân chính là \textbf{Ngư
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1.0\textwidth]{Hinhve/Biểu đồ use case tổng quát.png}
+    \includegraphics[width=0.6\textwidth]{planuml/overview.png}
     \caption{Biểu đồ Use Case tổng quát của hệ thống}
     \label{fig:usecase_tongquat}
 \end{figure}
@@ -70,24 +70,207 @@ Hệ thống được thiết kế xoay quanh tác nhân chính là \textbf{Ngư
     \end{itemize}
 \end{enumerate}
 
-\subsection{Biểu đồ use case phân rã XYZ}
+\subsection{Biểu đồ use case phân rã}
 \label{subsection:2.2.2}
-Với mỗi use case mức cao trong biểu đồ use case tổng quan, sinh viên tạo một mục riêng như mục \ref{subsection:2.2.2} và tiến hành phân rã use case đó. Lưu ý tên use case cần phân rã trong biểu đồ use case tổng quan phải khớp với tên đề mục.
 
-Trong mỗi mục như vậy, sinh viên vẽ và giải thích ngắn gọn các use case phân rã.
+Để làm rõ hơn các chức năng của hệ thống, phần này sẽ trình bày chi tiết các biểu đồ use case phân rã cho từng phân hệ chính.
+
+\subsubsection{Phân hệ Xác thực \& Người dùng}
+Phân hệ này quản lý việc truy cập và thông tin cá nhân của người dùng. Các chức năng bao gồm Đăng ký, Đăng nhập (hỗ trợ cả tài khoản thường và Google OAuth2), Đăng xuất, Quên mật khẩu. Ngoài ra, người dùng có thể cập nhật thông tin cá nhân (Avatar, thông tin cơ bản) và quản lý trạng thái online/offline của mình.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{planuml/authentication.png}
+    \caption{Biểu đồ Use Case phân rã: Xác thực \& Người dùng}
+    \label{fig:usecase_auth}
+\end{figure}
+
+\subsubsection{Phân hệ Mạng xã hội (Social)}
+Phân hệ này tập trung vào tính năng kết nối giữa các người dùng. Người dùng có thể tìm kiếm người khác trong hệ thống, gửi lời mời kết bạn, và quản lý danh sách bạn bè (chấp nhận, từ chối hoặc hủy kết bạn).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{planuml/social.png}
+    \caption{Biểu đồ Use Case phân rã: Mạng xã hội}
+    \label{fig:usecase_social}
+\end{figure}
+
+\subsubsection{Phân hệ Quản lý Nhóm \& Trò chuyện}
+Phân hệ này cho phép người dùng quản lý các cuộc hội thoại và nhóm chat. Người dùng có thể tạo cuộc hội thoại mới, xem danh sách nhóm, tạo nhóm mới, và quản lý thành viên trong nhóm (thêm hoặc xóa thành viên).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{planuml/group_chat.png}
+    \caption{Biểu đồ Use Case phân rã: Quản lý Nhóm \& Trò chuyện}
+    \label{fig:usecase_group}
+\end{figure}
+
+\subsubsection{Phân hệ Nhắn tin \& Gọi điện}
+Đây là phân hệ cốt lõi của ứng dụng, cung cấp khả năng trao đổi thông tin đa phương tiện. Người dùng có thể gửi tin nhắn văn bản, emoji, và các tệp tin (ảnh, video, audio). Hệ thống hỗ trợ xem video chất lượng cao qua HLS streaming và thực hiện cuộc gọi video thời gian thực qua WebRTC.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{planuml/messaging_calling.png}
+    \caption{Biểu đồ Use Case phân rã: Nhắn tin \& Gọi điện}
+    \label{fig:usecase_messaging}
+\end{figure}
 
 \subsection{Quy trình nghiệp vụ}
 \label{subsection:2.2.3}
 Nếu sản phẩm/hệ thống cần xây dựng có quy trình nghiệp vụ quan trọng/đáng chú ý, sinh viên cần mô tả và vẽ biểu đồ hoạt động minh họa quy trình nghiệp vụ đó. Sinh viên lưu ý đây không phải là luồng sự kiện của từng use case, mà là luồng hoạt động kết hợp nhiều use case để thực hiện một nghiệp vụ nào đó.
 
-Ví dụ, một hệ thống quản lý thư viện có quy trình nghiệp vụ mượn trả với mô tả sơ bộ như sau: Sinh viên làm thẻ mượn, sau đó sinh viên đăng ký mượn sách, thủ thư cho mượn, và cuối cùng sinh viên trả lại sách cho thư viện. Một hệ thống có thể có một vài quy trình nghiệp vụ quan trọng như vậy.
+Đồ án tập trung vào hai quy trình nghiệp vụ tiêu biểu đại diện cho logic nghiệp vụ (Kết bạn) và logic kỹ thuật phức tạp (Gọi Video).
+
+\subsubsection{Quy trình Kết bạn (Friend Request Process)}
+Đây là quy trình cơ bản để mở rộng mạng lưới xã hội của người dùng. Quy trình bắt đầu từ việc người dùng tìm kiếm, gửi lời mời, và kết thúc khi hai người trở thành bạn bè và có thể nhắn tin cho nhau.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{planuml/process_friend_request.png}
+    \caption{Biểu đồ hoạt động: Quy trình Kết bạn}
+    \label{fig:process_friend_request}
+\end{figure}
+
+\subsubsection{Quy trình thực hiện cuộc gọi Video (Video Call Process)}
+Quy trình này minh họa sự tương tác phức tạp giữa hai nười dùng và hệ thống (Signaling Server) để thiết lập một phiên kết nối thời gian thực thông qua WebRTC.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{planuml/process_video_call.png}
+    \caption{Biểu đồ hoạt động: Quy trình gọi Video Call}
+    \label{fig:process_video_call}
+\end{figure}
 \section{Đặc tả chức năng}
 \label{section:2.3}
-Sinh viên lựa chọn từ 4 đến 7 use case quan trọng nhất của đồ án để đặc tả chi tiết. Mỗi đặc tả bao gồm ít nhất các thông tin sau: (i) Tên use case, (ii) Luồng sự kiện (chính và phát sinh), (iii) Tiền điều kiện, và (iv) Hậu điều kiện. Sinh viên chỉ vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp.
-\subsection{Đặc tả use case A}
-\hfill
-\subsection{Đặc tả use case B}
-\hfill
+Dưới đây là đặc tả chi tiết cho 5 use case quan trọng nhất của hệ thống, bao gồm: Đăng nhập, Tìm kiếm người dùng, Tạo nhóm chat, Gửi tin nhắn và Gọi Video.
+
+\subsection{Đặc tả Use Case: Đăng nhập (Login)}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{10cm}|}
+        \hline
+        \textbf{Tên Use Case} & \textbf{Đăng nhập hệ thống} \\
+        \hline
+        \textbf{Mô tả} & Cho phép người dùng truy cập vào hệ thống để sử dụng các tính năng. \\
+        \hline
+        \textbf{Tiền điều kiện} & Người dùng đã có tài khoản (đã đăng ký). \\
+        \hline
+        \textbf{Luồng sự kiện chính} & 
+        1. Người dùng truy cập trang đăng nhập. \newline
+        2. Người dùng nhập Email và Mật khẩu. \newline
+        3. Người dùng nhấn nút "Đăng nhập". \newline
+        4. Hệ thống kiểm tra thông tin xác thực. \newline
+        5. Nếu đúng, hệ thống chuyển hướng vào trang chủ Chat. \\
+        \hline
+        \textbf{Luồng ngoại lệ} & 
+        4a. Nếu thông tin sai: Hệ thống báo lỗi "Email hoặc mật khẩu không đúng". \newline
+        4b. Nếu tài khoản bị khóa: Thông báo liên hệ quản trị viên. \\
+        \hline
+        \textbf{Hậu điều kiện} & Người dùng truy cập thành công, trạng thái chuyển sang Online. \\
+        \hline
+    \end{tabular}
+    \caption{Đặc tả Use Case Đăng nhập}
+\end{table}
+
+\subsection{Đặc tả Use Case: Tìm kiếm người dùng (Search User)}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{10cm}|}
+        \hline
+        \textbf{Tên Use Case} & \textbf{Tìm kiếm người dùng} \\
+        \hline
+        \textbf{Mô tả} & Người dùng tìm kiếm người khác trong hệ thống thông qua tên hoặc email để kết bạn. \\
+        \hline
+        \textbf{Tiền điều kiện} & Người dùng đã đăng nhập. \\
+        \hline
+        \textbf{Luồng sự kiện chính} & 
+        1. Người dùng chọn chức năng tìm kiếm. \newline
+        2. Người dùng nhập từ khóa (Tên hoặc Email). \newline
+        3. Hệ thống hiển thị danh sách kết quả phù hợp. \newline
+        4. Người dùng chọn người cần kết nối để xem thông tin hoặc nhắn tin. \\
+        \hline
+        \textbf{Hậu điều kiện} & Danh sách kết quả tìm kiếm được hiển thị. \\
+        \hline
+    \end{tabular}
+    \caption{Đặc tả Use Case Tìm kiếm người dùng}
+\end{table}
+
+\subsection{Đặc tả Use Case: Tạo nhóm chat (Create Group)}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{10cm}|}
+        \hline
+        \textbf{Tên Use Case} & \textbf{Tạo nhóm chat} \\
+        \hline
+        \textbf{Mô tả} & Tạo một cuộc trò chuyện nhóm mới với nhiều thành viên. \\
+        \hline
+        \textbf{Tiền điều kiện} & Người dùng đã đăng nhập và là bạn bè với các thành viên muốn thêm. \\
+        \hline
+        \textbf{Luồng sự kiện chính} & 
+        1. Người dùng nhấn nút "Tạo nhóm". \newline
+        2. Hệ thống hiển thị danh sách bạn bè. \newline
+        3. Người dùng chọn các thành viên và đặt tên nhóm. \newline
+        4. Người dùng nhấn "Tạo". \newline
+        5. Hệ thống tạo nhóm và thêm các thành viên vào. \\
+        \hline
+        \textbf{Hậu điều kiện} & Nhóm chat mới được tạo, các thành viên nhận được thông báo. \\
+        \hline
+    \end{tabular}
+    \caption{Đặc tả Use Case Tạo nhóm chat}
+\end{table}
+
+\subsection{Đặc tả Use Case: Gửi tin nhắn (Send Message)}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{10cm}|}
+        \hline
+        \textbf{Tên Use Case} & \textbf{Gửi tin nhắn (Văn bản/Đa phương tiện)} \\
+        \hline
+        \textbf{Mô tả} & Gửi nội dung tin nhắn đến một người dùng hoặc một nhóm. \\
+        \hline
+        \textbf{Tiền điều kiện} & Người dùng đã vào giao diện chat với đối phương. \\
+        \hline
+        \textbf{Luồng sự kiện chính} & 
+        1. Người dùng nhập nội dung hoặc chọn tệp tin (Ảnh/Video). \newline
+        2. Người dùng nhấn Gửi (Enter). \newline
+        3. Hệ thống nhận tin nhắn, lưu vào CSDL. \newline
+        4. Hệ thống gửi tin nhắn đến người nhận qua WebSocket. \newline
+        5. Giao diện người dùng cập nhật tin nhắn mới vừa gửi. \\
+        \hline
+        \textbf{Hậu điều kiện} & Tin nhắn hiển thị ở cả hai phía người gửi và người nhận. \\
+        \hline
+    \end{tabular}
+    \caption{Đặc tả Use Case Gửi tin nhắn}
+\end{table}
+
+\subsection{Đặc tả Use Case: Gọi Video (Video Call)}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|p{3cm}|p{10cm}|}
+        \hline
+        \textbf{Tên Use Case} & \textbf{Thực hiện cuộc gọi Video Call} \\
+        \hline
+        \textbf{Mô tả} & Thiết lập cuộc gọi video trực tiếp giữa hai người dùng (P2P). \\
+        \hline
+        \textbf{Tiền điều kiện} & Cả hai người dùng đều đang Online. Trình duyệt hỗ trợ WebRTC. \\
+        \hline
+        \textbf{Luồng sự kiện chính} & 
+        1. Người dùng A nhấn nút Video Call. \newline
+        2. Hệ thống gửi thông báo cuộc gọi đến Người dùng B. \newline
+        3. Người dùng B chấp nhận cuộc gọi. \newline
+        4. Hệ thống thiết lập kết nối Peer-to-Peer (WebRTC) giữa A và B. \newline
+        5. Hai bên trao đổi luồng Media (Video/Audio). \newline
+        6. Một trong hai bên nhấn nút Kết thúc để dừng cuộc gọi. \\
+        \hline
+        \textbf{Luồng ngoại lệ} & 
+        2a. Người dùng B Offline: Hệ thống báo không liên lạc được. \newline
+        3a. Người dùng B từ chối: Hệ thống báo máy bận. \\
+        \hline
+        \textbf{Hậu điều kiện} & Cuộc gọi kết thúc, lịch sử cuộc gọi được lưu lại. \\
+        \hline
+    \end{tabular}
+    \caption{Đặc tả Use Case Gọi Video}
+\end{table}
 
 \section{Yêu cầu phi chức năng}
 \label{section:2.4}

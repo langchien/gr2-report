@@ -1,0 +1,36 @@
+@startuml process_friend_request
+|Người dùng A (Người gửi)|
+start
+:Tìm kiếm người dùng B;
+:Gửi lời mời kết bạn;
+
+|Hệ thống|
+:Kiểm tra trạng thái quan hệ;
+if (Đã là bạn bè hoặc đã gửi lời mời?) then (Có)
+    :Thông báo lỗi/Trạng thái;
+    stop
+else (Không)
+    :Tạo bản ghi "Lời mời kết bạn";
+    :Gửi thông báo đến B;
+endif
+
+|Người dùng B (Người nhận)|
+:Nhận thông báo;
+:Xem danh sách lời mời;
+if (Chấp nhận?) then (Có)
+    :Nhấn "Chấp nhận";
+    |Hệ thống|
+    :Cập nhật trạng thái thành "Bạn bè";
+    :Tạo cuộc hội thoại mặc định;
+    :Thông báo cho A;
+    |Người dùng A (Người gửi)|
+    :Nhận thông báo "Đã trở thành bạn bè";
+else (Từ chối)
+    |Người dùng B (Người nhận)|
+    :Nhấn "Từ chối";
+    |Hệ thống|
+    :Hủy lời mời kết bạn;
+endif
+
+stop
+@enduml

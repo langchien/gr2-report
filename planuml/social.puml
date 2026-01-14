@@ -1,0 +1,21 @@
+@startuml social
+left to right direction
+actor "Người dùng" as User
+
+package "Mạng xã hội (Social)" {
+    usecase "Tìm kiếm người dùng" as UC_SearchUser
+    usecase "Gửi lời mời kết bạn" as UC_AddFriend
+    usecase "Chấp nhận lời mời kết bạn" as UC_AcceptFriend
+    usecase "Từ chối lời mời kết bạn" as UC_DeclineFriend
+    usecase "Xóa bạn bè (Unfriend)" as UC_Unfriend
+    usecase "Xem danh sách bạn bè" as UC_ViewFriends
+}
+
+User --> UC_SearchUser
+User --> UC_AddFriend
+User --> UC_AcceptFriend
+User --> UC_DeclineFriend
+User --> UC_Unfriend
+User --> UC_ViewFriends
+
+@enduml

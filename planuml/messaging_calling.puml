@@ -1,0 +1,21 @@
+@startuml messaging_calling
+left to right direction
+actor "Người dùng" as User
+
+package "Nhắn tin & Gọi điện" {
+    usecase "Gửi tin nhắn văn bản" as UC_SendText
+    usecase "Gửi biểu tượng cảm xúc (Emoji)" as UC_SendEmoji
+    usecase "Gửi tệp tin (Ảnh, Video, Audio)" as UC_SendFile
+    usecase "Xem Video Stream (HLS)" as UC_HLS
+    usecase "Thực hiện cuộc gọi Video (WebRTC)" as UC_VideoCall
+    usecase "Nhận thông báo tin nhắn" as UC_Notification
+}
+
+User --> UC_SendText
+User --> UC_SendEmoji
+User --> UC_SendFile
+User --> UC_HLS
+User --> UC_VideoCall
+User --> UC_Notification
+
+@enduml

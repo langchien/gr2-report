@@ -1,0 +1,23 @@
+@startuml group_chat
+left to right direction
+actor "Người dùng" as User
+
+package "Quản lý Nhóm & Trò chuyện" {
+    usecase "Tạo cuộc hội thoại mới" as UC_CreateChat
+    usecase "Mở cuộc hội thoại" as UC_OpenChat
+    usecase "Tạo nhóm chat" as UC_CreateGroup
+    usecase "Xem danh sách nhóm" as UC_ViewGroupList
+    usecase "Thêm thành viên vào nhóm" as UC_AddMember
+    usecase "Xóa thành viên khỏi nhóm" as UC_RemoveMember
+    usecase "Xóa cuộc hội thoại" as UC_DeleteChat
+}
+
+User --> UC_CreateChat
+User --> UC_OpenChat
+User --> UC_CreateGroup
+User --> UC_ViewGroupList
+User --> UC_AddMember
+User --> UC_RemoveMember
+User --> UC_DeleteChat
+
+@enduml

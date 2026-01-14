@@ -1,0 +1,38 @@
+@startuml overview
+left to right direction
+actor "Người dùng" as User
+
+package "Hệ thống Chat App" {
+    package "Xác thực & Người dùng" {
+        usecase "Đăng ký / Đăng nhập" as UC_Auth
+        usecase "Quản lý thông tin cá nhân" as UC_Profile
+    }
+
+    package "Mạng xã hội (Social)" {
+        usecase "Tìm kiếm & Kết bạn" as UC_Social
+        usecase "Quản lý danh sách bạn bè" as UC_ManageFriends
+    }
+
+    package "Quản lý Nhóm & Trò chuyện" {
+        usecase "Tạo & Quản lý nhóm chat" as UC_Group
+        usecase "Quản lý tin nhắn" as UC_Chat
+    }
+
+    package "Nhắn tin & Gọi điện" {
+        usecase "Trao đổi tin nhắn (Text/File)" as UC_Messaging
+        usecase "Gọi điện (Video Call)" as UC_Calling
+        usecase "Xem Video (HLS Streaming)" as UC_Streaming
+    }
+}
+
+User --> UC_Auth
+User --> UC_Profile
+User --> UC_Social
+User --> UC_ManageFriends
+User --> UC_Group
+User --> UC_Chat
+User --> UC_Messaging
+User --> UC_Calling
+User --> UC_Streaming
+
+@enduml
