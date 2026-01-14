@@ -1,0 +1,38 @@
+classDiagram
+    class AuthService {
+        -userService: UserService
+        -jwtService: JwtService
+        -redisService: RedisService
+        +register(token, fields, pass): User
+        +login(email, pass): AuthResponse
+        +refreshToken(token): AuthResponse
+        +logout(refreshToken): void
+        +verifyEmail(email, otp): string
+    }
+
+    class MediaService {
+        -prismaService: PrismaService
+        -mediaQueue: Queue
+        -s3Service: S3Service
+        +handleVideoToHLS(video): Media
+        +serveVideoM3u8(id): FileStream
+        +multiUploadAndCreateMessage(files, chatId): Message
+        +handleTransformFile(files): Media[]
+    }
+
+    class SocketService {
+        -io: Server
+        +joinChat(chatId, userIds): void
+        +sendMessage(chatId, payload): void
+        +mediaProcessingUpdate(chatId, media): void
+        +memberAdded(chatId, users): void
+    }
+
+    class UserService {
+        +create(data): User
+        +findOneByEmail(email): User
+    }
+
+    AuthService --> UserService : uses
+    AuthService ..> RedisService : checks token
+    MediaService ..> Queue : enqueues job

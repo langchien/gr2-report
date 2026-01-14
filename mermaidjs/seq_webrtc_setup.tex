@@ -1,0 +1,44 @@
+sequenceDiagram
+    actor Caller
+    participant Socket as SocketService
+    actor Callee
+
+    Note over Caller, Callee: Giai đoạn 1: Signaling (Trao đổi SDP)
+    
+    Caller->>Caller: Tạo Offer (SDP)
+    Caller->>Socket: Emit "call-user" { offer, to: CalleeID }
+    activate Socket
+    Socket->>Callee: Event "call-made" { offer, socket: CallerID }
+    deactivate Socket
+    
+    activate Callee
+    Callee->>Callee: Set Remote Desc (Offer)
+    Callee->>Callee: Tạo Answer (SDP)
+    Callee->>Socket: Emit "make-answer" { answer, to: CallerID }
+    deactivate Callee
+    
+    activate Socket
+    Socket->>Caller: Event "answer-made" { answer, socket: CalleeID }
+    deactivate Socket
+    
+    activate Caller
+    Caller->>Caller: Set Remote Desc (Answer)
+    deactivate Caller
+
+    Note over Caller, Callee: Giai đoạn 2: ICE Candidates (Tìm đường đi)
+
+    par Parallel Exchange
+        loop Caller Candidates
+            Caller->>Socket: Emit "ice-candidate"
+            Socket->>Callee: Forward Candidate
+            Callee->>Callee: Add ICE Candidate
+        end
+        loop Callee Candidates
+            Callee->>Socket: Emit "ice-candidate"
+            Socket->>Caller: Forward Candidate
+            Caller->>Caller: Add ICE Candidate
+        end
+    end
+
+    Note over Caller, Callee: Giai đoạn 3: P2P Connection Established
+    Caller<-->>Callee: Media Stream (Video/Audio) Direct Connection

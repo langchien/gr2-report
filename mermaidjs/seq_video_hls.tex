@@ -1,0 +1,40 @@
+sequenceDiagram
+    actor User
+    participant Client
+    participant MediaCtrl as MediaController
+    participant MediaSvc as MediaService
+    participant Queue as MediaQueue
+    participant Worker as BackgroundWorker
+    participant S3 as AWS S3
+    participant Socket as SocketService
+
+    User->>Client: Chọn file Video & Gửi
+    Client->>MediaCtrl: POST /upload-video (File)
+    activate MediaCtrl
+    MediaCtrl->>MediaSvc: handleVideoToHLS(File)
+    activate MediaSvc
+    MediaSvc->>MediaSvc: Lưu media status="Pending"
+    MediaSvc->>Queue: Enqueue Job (mediaId, videoPath)
+    MediaSvc-->>MediaCtrl: Return Media Info
+    deactivate MediaSvc
+    MediaCtrl-->>Client: 200 OK (Message Created)
+    deactivate MediaCtrl
+    
+    Note over Client: Hiển thị "Đang xử lý..."
+    
+    Queue->>Worker: Process Job
+    activate Worker
+    Worker->>Worker: Transcode Video -> HLS
+    Worker->>S3: Upload Segments (.ts) & Manifest (.m3u8)
+    activate S3
+    S3-->>Worker: Upload Success
+    deactivate S3
+    Worker->>Worker: Update DB status="Ready"
+    Worker->>Socket: mediaProcessingUpdate(mediaId)
+    deactivate Worker
+    
+    activate Socket
+    Socket-->>Client: Event: MEDIA_UPDATE_STATUS
+    deactivate Socket
+    
+    Note over Client: Cập nhật UI: Video sẵn sàng xem

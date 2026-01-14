@@ -1,6 +1,7 @@
-\documentclass[a4paper,13pt,3p,twoside]{report}
-\usepackage{scrextend}
-\changefontsizes{13pt}
+\documentclass[a4paper,12pt,3p,twoside]{report}
+% \usepackage{scrextend}
+% \usepackage{scrhack}
+% \changefontsizes{13pt}
 \usepackage[utf8]{vietnam}
 \usepackage[top=2cm, bottom=2cm, left=3.5cm, right=2.5cm]{geometry}
 
@@ -42,7 +43,7 @@
 \usepackage{parskip}
 
 % package content table
-\usepackage{tocbasic}
+% \usepackage{tocbasic}
 
 \usepackage{outlines}
 \usepackage{blindtext}
@@ -53,14 +54,14 @@
 \renewcommand{\bibname}{Danh_sach_tai_lieu_tham_khao} 
 \usepackage[backend=bibtex,style=ieee]{biblatex}  %backend=biber is 'better'
 
-\renewcommand\appendixname{PHỤ LỤC}
-\renewcommand\appendixpagename{PHỤ LỤC}
-\renewcommand\appendixtocname{PHỤ LỤC}
+% \renewcommand\appendixname{PHỤ LỤC}
+% \renewcommand\appendixpagename{PHỤ LỤC}
+% \renewcommand\appendixtocname{PHỤ LỤC}
 
 
 \addbibresource{Danh_sach_tai_lieu_tham_khao.bib} % chèn file chứa danh mục tài liệu tham khảo vào 
 
-\include{lstlisting} % Phần này cho phép chèn code và formatting code như C, C++, Python
+% \include{lstlisting} % Phần này cho phép chèn code và formatting code như C, C++, Python
 
 \input{Tu_viet_tat}
 
@@ -313,9 +314,9 @@
 \printbibliography
 \phantomsection\addcontentsline{toc}{chapter}{TÀI LIỆU THAM KHẢO}
 
-\appendixpage
-\appendices
-\addappheadtotoc
+% \appendixpage
+% \appendices
+% \addappheadtotoc
 
 % \chapter*{PHỤ LỤC} %Kết luận và hướng phát triển}
 

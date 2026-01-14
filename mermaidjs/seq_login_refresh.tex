@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor User
+    participant Client
+    participant AuthCtrl as AuthController
+    participant AuthSvc as AuthService
+    participant Redis as RedisService
+
+    User->>Client: Nhập Email/Pass
+    Client->>AuthCtrl: POST /login
+    activate AuthCtrl
+    AuthCtrl->>AuthSvc: login(email, pass)
+    activate AuthSvc
+    AuthSvc->>AuthSvc: Validate Password
+    AuthSvc->>AuthSvc: Generate Access & Refresh Token
+    AuthSvc->>Redis: Save RefreshToken (Whitelist)
+    AuthSvc-->>AuthCtrl: { access_token, refresh_token }
+    deactivate AuthSvc
+    AuthCtrl-->>Client: 200 OK
+    deactivate AuthCtrl
+
+    Note over Client: Lưu Token vào Storage
+
+    loop Sau 15 phút (Access Token hết hạn)
+        Client->>AuthCtrl: Gọi API (với Expired Token)
+        AuthCtrl-->>Client: 401 Unauthorized
+        
+        Client->>AuthCtrl: POST /refresh-token (refreshToken)
+        activate AuthCtrl
+        AuthCtrl->>AuthSvc: refreshToken(token)
+        activate AuthSvc
+        AuthSvc->>Redis: Check token exists?
+        Redis-->>AuthSvc: Exists
+        AuthSvc->>Redis: Delete old token
+        AuthSvc->>Redis: Save NEW RefreshToken
+        AuthSvc-->>AuthCtrl: { new_access, new_refresh }
+        deactivate AuthSvc
+        AuthCtrl-->>Client: 200 OK
+        deactivate AuthCtrl
+        
+        Note over Client: Retry API request ban đầu
+    end

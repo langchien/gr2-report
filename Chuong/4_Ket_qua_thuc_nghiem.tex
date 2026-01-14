@@ -14,6 +14,13 @@ Hệ thống bao gồm các thành phần chính tương tác như sau:
     \item \textbf{Data Layer:} Bao gồm MongoDB (Primary DB), Redis (Cache/PubSub) và AWS S3 (Object Storage).
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Hinhve/System_Overview_Architecture.png}
+    \caption{Mô hình kiến trúc tổng quan 3 tầng (3-Tier Architecture)}
+    \label{fig:system_overview}
+\end{figure}
+
 \subsection{Kiến trúc chi tiết phía Backend}
 Backend được tổ chức theo mô hình \textbf{Layered Architecture} chặt chẽ:
 \begin{enumerate}
@@ -24,24 +31,196 @@ Backend được tổ chức theo mô hình \textbf{Layered Architecture} chặt
 
 Đặc biệt, module \textbf{Streaming Service} hoạt động độc lập: video sau khi upload sẽ được đưa vào hàng đợi (Queue), sau đó được transcode sang chuẩn HLS (m3u8) và upload lên S3.
 
-\subsection{Biểu đồ thành phần (Component Diagram)}
-Hệ thống được triển khai dưới dạng các Docker Container giao tiếp qua Docker Network:
-\begin{itemize}
-    \item \textbf{Nginx (Gateway):} Reverse Proxy xử lý SSL, Static Files và Load Balancing.
-    \item \textbf{App Cluster:} Các instance của Node.js Server (có thể scale horizontal).
-    \item \textbf{Redis Adapter:} Đồng bộ hóa sự kiện Socket.io giữa các App Instances.
-    \item \textbf{Turn Server (Coturn):} Hỗ trợ relay media WebRTC khi kết nối P2P bị chặn bởi NAT/Firewall.
-\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Hinhve/Backend_Layered_Architecture.png} 
+    \caption{Kiến trúc chi tiết Backend theo mô hình Layered}
+    \label{fig:backend_layered}
+\end{figure}
+
 
 \section{Thiết kế chi tiết}
 \subsection{Thiết kế giao diện}
 Phần này có độ dài từ hai đến ba trang. Sinh viên đặc tả thông tin về màn hình mà ứng dụng của mình hướng tới, bao gồm độ phân giải màn hình, kích thước màn hình, số lượng màu sắc hỗ trợ, v.v. Tiếp đến, sinh viên đưa ra các thống nhất/chuẩn hóa của mình khi thiết kế giao diện như thiết kế nút, điều khiển, vị trí hiển thị thông điệp phản hồi, phối màu, v.v. Sau cùng sinh viên đưa ra một số hình ảnh minh họa thiết kế giao diện cho các chức năng quan trọng nhất. Lưu ý, sinh viên không nhầm lẫn giao diện thiết kế với giao diện của sản phẩm sau cùng.
-\subsection{Thiết kế lớp}
-Phần này có độ dài từ ba đến bốn trang. Sinh viên trình bày thiết kế chi tiết các thuộc tính và phương thức cho một số lớp chủ đạo/quan trọng nhất của ứng dụng (từ 2-4 lớp). Thiết kế chi tiết cho các lớp khác, nếu muốn trình bày, sinh viên đưa vào phần phụ lục.
+\subsection{Thiết kế lớp (Class Design)}
+Dựa trên kiến trúc Layered Architecture và Microservices, hệ thống được chia thành nhiều lớp xử lý chuyên biệt. Dưới đây là thiết kế chi tiết các lớp Service quan trọng nhất, nơi chứa phần lớn logic nghiệp vụ (Business Logic) của hệ thống.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Hinhve/class_diagram_core.png}
+    \caption{Thiết kế lớp (Class Design)}
+    \label{fig:class_diagram_core}
+\end{figure}
+\subsubsection{Chi tiết các lớp xử lý chính}
 
-Để minh họa thiết kế lớp, sinh viên thiết kế luồng truyền thông điệp giữa các đối tượng tham gia cho 2 đến 3 use case quan trọng nào đó bằng biểu đồ trình tự (hoặc biểu đồ giao tiếp).
+\paragraph{1. AuthService (Dịch vụ xác thực)}
+Lớp \textbf{AuthService} chịu trách nhiệm quản lý phiên làm việc của người dùng, bao gồm đăng ký, đăng nhập và cơ chế cấp phát lại Token (Refresh Token). Đây là lớp bảo mật cốt lõi, đảm bảo rằng chỉ những người dùng hợp lệ mới có thể truy cập hệ thống.
+
+\begin{itemize}
+    \item \textbf{Các thuộc tính (Dependencies):}
+    \begin{itemize}
+        \item \texttt{userService}: Tương tác với cơ sở dữ liệu User.
+        \item \texttt{jwtService}: Mã hóa và giải mã Access/Refresh Token.
+        \item \texttt{redisService}: Lưu trữ Whitelist/Blacklist token để quản lý phiên đăng nhập.
+    \end{itemize}
+    \item \textbf{Các phương thức chính:}
+    \begin{itemize}
+        \item \texttt{register(registerToken, fields, passwordRaw)}: Hoàn tất đăng ký người dùng sau khi xác thực OTP thành công.
+        \item \texttt{login(email, passwordRaw)}: Kiểm tra thông tin đăng nhập và trả về cặp Access/Refresh Token.
+        \item \texttt{refreshToken(token)}: Kiểm tra tính hợp lệ của Refresh Token trong Redis và cấp phát Access Token mới (Cơ chế Silent Refresh).
+        \item \texttt{logout(refreshToken)}: Hủy phiên làm việc hiện tại bằng cách xóa token khỏi Redis.
+        \item \texttt{verifyEmail(email, otp)}: Xác minh địa chỉ email người dùng.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{2. MediaService (Dịch vụ đa phương tiện)}
+Lớp \textbf{MediaService} xử lý các tác vụ liên quan đến upload và chuyển đổi định dạng file. Đặc biệt, lớp này tích hợp quy trình transcode video sang chuẩn HLS để phục vụ streaming.
+
+\begin{itemize}
+    \item \textbf{Các thuộc tính (Dependencies):}
+    \begin{itemize}
+        \item \texttt{prismaService}: Lưu trữ metadata của file vào database.
+        \item \texttt{mediaQueue}: Hàng đợi (Queue) để xử lý các tác vụ nặng (transcode video) ở background worker.
+        \item \texttt{s3Service}: Interface giao tiếp với AWS S3 Object Storage.
+    \end{itemize}
+    \item \textbf{Các phương thức chính:}
+    \begin{itemize}
+        \item \texttt{handleVideoToHLS(videoFile)}: Tiếp nhận video gốc, tạo bản ghi trạng thái "Processing" và đẩy vào hàng đợi xử lý.
+        \item \texttt{serveVideoM3u8(id)}: Trả về file manifest (.m3u8) để client bắt đầu luồng phát video.
+        \item \texttt{multiUploadAndCreateMessage(files, ...)}: Xử lý upload đồng thời nhiều ảnh/file và tự động tạo tin nhắn tương ứng.
+        \item \texttt{handleTransformFile(files)}: Chuẩn hóa file (ví dụ: resize ảnh, convert audio) trước khi lưu trữ để tối ưu dung lượng.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{3. SocketService (Dịch vụ thời gian thực)}
+Lớp \textbf{SocketService} đóng vai trò là tầng giao tiếp (Communication Layer), quản lý các kết nối WebSocket và phát tán sự kiện (Events) tới Client.
+
+\begin{itemize}
+    \item \textbf{Các thuộc tính (Dependencies):}
+    \begin{itemize}
+        \item \texttt{io}: Instance của Socket.io Server.
+    \end{itemize}
+    \item \textbf{Các phương thức chính:}
+    \begin{itemize}
+        \item \texttt{joinChat(chatId, userIds)}: Đưa người dùng vào các "Room" chat riêng biệt để nhận tin nhắn.
+        \item \texttt{sendMessage(chatId, payload)}: Gửi sự kiện tin nhắn mới tới tất cả thành viên trong Room.
+        \item \texttt{mediaProcessingUpdate(chatId, media)}: Thông báo realtime cho Client khi video đã xử lý xong (từ trang thái Processing -> Ready).
+        \item \texttt{memberAdded/Removed(...)}: Cập nhật danh sách thành viên trong nhóm theo thời gian thực.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Biểu đồ tương tác (Sequence Diagrams)}
+
+\paragraph{1. Quy trình Gửi tin nhắn video và Xử lý HLS}
+Biểu đồ dưới đây mô tả luồng dữ liệu khi người dùng gửi một video. Hệ thống tách biệt việc upload và việc xử lý video (Transcoding) để đảm bảo phản hồi nhanh cho người dùng.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Hinhve/Seq_SendVideoHLS.png}
+    \caption{Biểu đồ tuần tự use case Gửi Video và Xử lý HLS Background}
+    \label{fig:seq_video}
+\end{figure}
+
+\paragraph{2. Quy trình Đăng nhập và Tự động cấp lại Token}
+Mô tả cơ chế bảo mật sử dụng JWT và Redis. Khi Access Token hết hạn, Client tự động yêu cầu cấp mới mà không làm gián đoạn trải nghiệm người dùng.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Hinhve/Seq_LoginRefresh.png}
+    \caption{Biểu đồ tuần tự use case Đăng nhập và Refresh Token}
+    \label{fig:seq_auth}
+\end{figure}
 \subsection{Thiết kế cơ sở dữ liệu}
-Phần này có độ dài từ hai đến bốn trang. Sinh viên thiết kế, vẽ và giải thích biểu đồ thực thể liên kết (E-R diagram). Từ đó, sinh viên thiết kế cơ sở dữ liệu tùy theo hệ quản trị cơ sở dữ liệu mà mình sử dụng (SQL, NoSQL, Firebase, v.v.)
+Hệ thống sử dụng hệ quản trị cơ sở dữ liệu \textbf{MongoDB} (NoSQL). Việc lựa chọn NoSQL thay vì RDBMS truyền thống (như MySQL, PostgreSQL) dựa trên các yếu tố sau:
+\begin{itemize}
+    \item \textbf{High Write Throughput:} Ứng dụng chat real-time tạo ra lượng lớn tin nhắn trong thời gian ngắn, MongoDB tối ưu tốt cho việc ghi dữ liệu liên tục.
+    \item \textbf{Flexible Schema:} Cấu trúc tin nhắn có thể thay đổi linh hoạt (text, hình ảnh, video, notification) mà không cần migrate schema phức tạp.
+    \item \textbf{Denormalization:} Khả năng nhúng (embedding) dữ liệu giúp giảm thiểu các truy vấn JOIN đắt đỏ, tăng tốc độ đọc cho các tính năng như "Danh sách tin nhắn gần nhất".
+\end{itemize}
+
+\subsubsection{Biểu đồ Quan hệ (Entity-Relationship Diagram)}
+Mặc dù là NoSQL, hệ thống vẫn duy trì các mối quan hệ chặt chẽ giữa các thực thể thông qua `ObjectId`.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Hinhve/Database_ERD.png} 
+    \caption{Biểu đồ quan hệ thực thể (ERD) của hệ thống}
+    \label{fig:db_erd}
+\end{figure}
+
+\subsubsection{Chi tiết các Collections chính}
+
+Dưới đây là đặc tả chi tiết các Collection quan trọng trong cơ sở dữ liệu:
+
+\paragraph{1. Collection Users}
+Lưu trữ thông tin định danh và hồ sơ người dùng. Các trường `email` và `username` được đánh Index Unique để đảm bảo tính duy nhất.
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu trúc Collection Users}
+    \begin{tabular}{|l|l|p{8cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu} & \textbf{Mô tả} \\ \hline
+    \_id & ObjectId & Khóa chính (Primary Key). \\ \hline
+    email & String & Email đăng nhập (Unique). \\ \hline
+    username & String & Tên định danh (Unique, Fulltext Index). \\ \hline
+    hashedPassword & String & Mật khẩu đã mã hóa (Bcrypt). \\ \hline
+    displayName & String & Tên hiển thị với người dùng khác. \\ \hline
+    avatarUrl & String & Đường dẫn ảnh đại diện. \\ \hline
+    createdAt & Date & Thời gian tạo tài khoản. \\ \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{2. Collection Chats}
+Lưu trữ thông tin về các cuộc hội thoại (Direct hoặc Group). Điểm đặc biệt là trường `lastMessage` và `groupInfo` được thiết kế dạng \textbf{Embedded Document} để tối ưu hiệu năng khi hiển thị danh sách chat.
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu trúc Collection Chats}
+    \begin{tabular}{|l|l|p{8cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu} & \textbf{Mô tả} \\ \hline
+    \_id & ObjectId & Khóa chính. \\ \hline
+    type & Enum & Loại chat (`direct` hoặc `group`). \\ \hline
+    lastMessage & Object & \textit{(Embedded)} Chứa thông tin tóm tắt tin nhắn cuối cùng (content, senderId, createdAt). Giúp client hiển thị preview mà không cần query vào bảng Message. \\ \hline
+    groupInfo & Object & \textit{(Embedded)} Chứa tên nhóm, người tạo (chỉ có khi type=group). \\ \hline
+    participantIds & Array & Danh sách ID người tham gia (Relation). \\ \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{3. Collection Messages}
+Lưu trữ nội dung chi tiết của tin nhắn. Mỗi tin nhắn thuộc về một Chat và một Sender cụ thể.
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu trúc Collection Messages}
+    \begin{tabular}{|l|l|p{8cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu} & \textbf{Mô tả} \\ \hline
+    \_id & ObjectId & Khóa chính. \\ \hline
+    chatId & ObjectId & Reference tới Collection Chats. \\ \hline
+    senderId & ObjectId & Reference tới Collection Users. \\ \hline
+    content & String & Nội dung văn bản của tin nhắn. \\ \hline
+    medias & Array & Danh sách các file đính kèm (Media Objects). \\ \hline
+    createdAt & Date & Thời gian gửi (Index Time-to-Live nếu cần). \\ \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{4. Collection Medias}
+Quản lý các tệp đa phương tiện. Với video, hệ thống lưu trạng thái xử lý để phục vụ quy trình transcode HLS.
+
+\begin{table}[H]
+    \centering
+    \caption{Cấu trúc Collection Medias}
+    \begin{tabular}{|l|l|p{8cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu} & \textbf{Mô tả} \\ \hline
+    \_id & ObjectId & Khóa chính. \\ \hline
+    type & Enum & Loại file (`image`, `video`, `video\_hls`, `file`). \\ \hline
+    url & String & Đường dẫn tới file trên AWS S3. \\ \hline
+    status & Enum & Trạng thái xử lý (`pending`, `processing`, `completed`, `failed`). \\ \hline
+    messageId & ObjectId & Reference tới tin nhắn chứa media này. \\ \hline
+    \end{tabular}
+\end{table}
 
 \section{Xây dựng ứng dụng}
 
@@ -75,6 +254,12 @@ Hệ thống sử dụng cơ chế **JWT (JSON Web Token)** kép gồm Access To
     \item Khi đăng nhập thành công, Server trả về cặp token.
     \item Access Token được dùng để xác thực API Requests.
     \item Khi Access Token hết hạn, Client tự động dùng Refresh Token gọi API `/refresh` để lấy token mới mà không cần user đăng nhập lại (Silent Refresh), đảm bảo trải nghiệm liền mạch.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{Hinhve/Seq_JWT_Auth_Refresh.png}
+        \caption{Quy trình xác thực JWT và cơ chế Refresh Token tự động}
+    \end{figure}
 \end{itemize}
 
 \subsubsection{Quy trình xử lý Video HLS (HTTP Live Streaming)}
@@ -90,6 +275,12 @@ Hệ thống sử dụng cơ chế **JWT (JSON Web Token)** kép gồm Access To
         \end{itemize}
     \item **Storage:** Toàn bộ file segment và manifest được upload lên AWS S3.
     \item **Delivery:** Client nhận link `.m3u8`, trình duyệt tự động tải từng segment nhỏ để phát, cho phép tua (seek) nhanh và không cần tải toàn bộ video.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{Hinhve/Seq_HLS_Workflow.png}
+        \caption{Quy trình xử lý Video HLS (HTTP Live Streaming)}
+    \end{figure}
 \end{enumerate}
 
 \subsubsection{Thiết lập cuộc gọi WebRTC}
@@ -99,6 +290,12 @@ Quy trình Signaling (tín hiệu) để thiết lập kết nối P2P diễn ra
     \item **Answer:** Người nhận (Callee) nhận Offer, tạo SDP Answer và gửi lại.
     \item **ICE Candidates:** Cả hai bên liên tục trao đổi các ứng viên mạng (IP:Port) để tìm đường đi tốt nhất (qua LAN, Wifi hoặc TURN server).
     \item **Connected:** Khi đường truyền P2P thiết lập thành công, stream Video/Audio được truyền trực tiếp giữa 2 máy.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{Hinhve/Seq_WebRTC_Setup.png}
+        \caption{Quy trình thiết lập cuộc gọi WebRTC}
+    \end{figure}
 \end{enumerate}
 
 \subsection{Kết quả đạt được và Minh họa}
@@ -111,7 +308,7 @@ Các module đã hoàn thiện và hoạt động ổn định:
 
 \begin{figure}[H]
     \centering
-    %\includegraphics[width=0.9\textwidth]{Hinhve/hls_demo.png}
+    \includegraphics[width=0.9\textwidth]{Hinhve/hls_demo.png}
     \caption{Trình phát video HLS trong khung chat, tự động buffer từng segment}
 \end{figure}
 
